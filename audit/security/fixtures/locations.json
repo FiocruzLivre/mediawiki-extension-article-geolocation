@@ -1,0 +1,129 @@
+{
+  "schema": 1,
+  "comment": "Fixture-only synthetic values, never real locations",
+  "cases": [
+    {
+      "id": "equator_origin",
+      "lat": 0,
+      "lon": 0,
+      "valid": true
+    },
+    {
+      "id": "north_east_limits",
+      "lat": 90,
+      "lon": 180,
+      "valid": true
+    },
+    {
+      "id": "south_west_limits",
+      "lat": -90,
+      "lon": -180,
+      "valid": true
+    },
+    {
+      "id": "decimal",
+      "lat": -3.68274,
+      "lon": -40.3512,
+      "valid": true
+    },
+    {
+      "id": "lat_above",
+      "lat": 90.00001,
+      "lon": 0,
+      "valid": false
+    },
+    {
+      "id": "lat_below",
+      "lat": -90.00001,
+      "lon": 0,
+      "valid": false
+    },
+    {
+      "id": "lon_above",
+      "lat": 0,
+      "lon": 180.00001,
+      "valid": false
+    },
+    {
+      "id": "lon_below",
+      "lat": 0,
+      "lon": -180.00001,
+      "valid": false
+    },
+    {
+      "id": "nan",
+      "lat": "NaN",
+      "lon": 0,
+      "valid": false
+    },
+    {
+      "id": "inf",
+      "lat": "Infinity",
+      "lon": 0,
+      "valid": false
+    },
+    {
+      "id": "minus_inf",
+      "lat": 0,
+      "lon": "-Infinity",
+      "valid": false
+    },
+    {
+      "id": "empty",
+      "lat": "",
+      "lon": "",
+      "valid": false
+    },
+    {
+      "id": "null",
+      "lat": null,
+      "lon": null,
+      "valid": false
+    },
+    {
+      "id": "boolean",
+      "lat": true,
+      "lon": false,
+      "valid": false
+    },
+    {
+      "id": "array",
+      "lat": [],
+      "lon": [],
+      "valid": false
+    },
+    {
+      "id": "object",
+      "lat": {
+        "value": 1
+      },
+      "lon": 0,
+      "valid": false
+    },
+    {
+      "id": "numeric_strings",
+      "lat": "-3.68",
+      "lon": "-40.35",
+      "valid": false
+    },
+    {
+      "id": "xss",
+      "lat": "</script><img src=x onerror=alert(1)>",
+      "lon": 0,
+      "valid": false
+    },
+    {
+      "id": "reversal_detectable",
+      "lat": -123,
+      "lon": 45,
+      "valid": false
+    },
+    {
+      "id": "reversal_ambiguous",
+      "lat": 25,
+      "lon": 35,
+      "valid": true,
+      "review": "cannot detect reversal solely from valid ranges"
+    }
+  ]
+}
