@@ -1,0 +1,13 @@
+{
+  "manifest_version": 2,
+  "name": "ArticleGeolocation",
+  "version": "0.0.0-dev",
+  "author": [
+    "FiocruzLivre"
+  ],
+  "license-name": "AGPL-3.0-or-later",
+  "type": "other",
+  "requires": {
+    "MediaWiki": ">= 1.46.0"
+  }
+}

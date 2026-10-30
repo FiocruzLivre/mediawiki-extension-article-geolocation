@@ -1,0 +1,9 @@
+{
+  "name": "fiocruzlivre/mediawiki-extension-article-geolocation",
+  "description": "Optional moderated article geolocation for MediaWiki",
+  "type": "mediawiki-extension",
+  "license": "AGPL-3.0-or-later",
+  "require": {
+    "php": ">=8.3"
+  }
+}
