@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Seleção de localização — demonstração isolada</title><link rel="stylesheet" href="./src/geo.css"></head>
+<body><main><h1>Formulário de artigo — demonstração</h1>
+<label for="article">Texto do artigo (não alterado pelo seletor)</label>
+<p><textarea id="article" rows="3" cols="65">Um texto editorial já escrito.</textarea></p>
+<section class="geo-picker" id="geo" aria-label="Localização geográfica">
+<h2>Localização do artigo (opcional)</h2>
+<p class="geo-help">Informe onde fica o assunto do artigo. Não precisa ser a sua casa nem a localização de quem escreve.</p>
+<label><input data-geo="enable" type="checkbox"> Associar um local a este artigo</label>
+<p data-geo="snapshot" role="status">Nenhuma localização confirmada.</p>
+<div data-geo="panel" hidden>
+<label for="geo-search">Buscar cidade, bairro ou endereço</label>
+<input id="geo-search" data-geo="search" type="search" autocomplete="off">
+<button data-geo="search-button" type="button">Buscar local</button>
+<ul class="geo-results" data-geo="results" aria-label="Locais encontrados"></ul>
+<p><button data-geo="gps" type="button">Usar minha localização</button></p>
+<p class="geo-help">A posição do aparelho é apenas uma sugestão. Verifique antes de confirmar.</p>
+<div data-geo="map" class="geo-map" aria-label="Mapa interativo para escolher uma posição"></div>
+<p data-geo="map-hint" class="geo-help">Clique no mapa, arraste o marcador ou use as coordenadas para ajustar a posição.</p>
+<div class="geo-fields">
+<label>Latitude <input data-geo="latitude" type="number" step="any" min="-90" max="90" inputmode="decimal"></label>
+<label>Longitude <input data-geo="longitude" type="number" step="any" min="-180" max="180" inputmode="decimal"></label>
+<label>Precisão <select data-geo="precisao"><option value="municipio">Município</option><option value="aproximada" selected>Aproximada</option><option value="exata">Exata</option></select></label>
+<label>Tipo de local <select data-geo="tipo_local"><option value="sede">Sede</option><option value="atuacao" selected>Atuação</option><option value="evento">Evento</option><option value="referencia">Referência</option></select></label>
+</div>
+<label><input data-geo="exibir_no_mapa" type="checkbox"> Exibir esta localização no mapa público</label>
+<label><input data-geo="consent" type="checkbox"> Confirmo que revisei o local e concordo em publicar essa localização no artigo</label>
+<p><button data-geo="confirm" type="button">Confirmar localização</button><button data-geo="cancel" type="button">Cancelar</button></p>
+</div>
+<p data-geo="status" class="geo-status" role="status" aria-live="polite"></p>
+</section>
+<pre id="output" aria-label="Dados confirmados"></pre></main>
+<script src="./src/geo.js"></script>
+<script>
+fetch('./fixtures/places.json').then(r => r.json()).then(locations => {
+  MapaGeoPicker.init(document.getElementById('geo'), {
+    locations, onConfirm: data => { document.getElementById('output').textContent = JSON.stringify(data, null, 2); }
+  });
+});
+</script></body></html>

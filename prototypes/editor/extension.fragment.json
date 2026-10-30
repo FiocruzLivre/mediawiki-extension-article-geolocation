@@ -1,0 +1,26 @@
+{
+  "name": "MapaGeoEditor",
+  "version": "0.1.0",
+  "license-name": "AGPL-3.0-or-later",
+  "AutoloadClasses": {
+    "MapaGeoEditor\\PFGeoLocationInput": "geo-initiative/editor/src/PFGeoLocationInput.php",
+    "MapaGeoEditor\\Hooks": "geo-initiative/editor/src/Hooks.php"
+  },
+  "Hooks": {
+    "PageForms::FormPrinterSetup": "MapaGeoEditor\\Hooks::onFormPrinterSetup"
+  },
+  "ResourceModules": {
+    "ext.mapa.geoEditor": {
+      "scripts": [
+        "geo-initiative/editor/src/geo.js",
+        "geo-initiative/editor/src/bootstrap.js"
+      ],
+      "styles": [
+        "geo-initiative/editor/src/geo.css"
+      ],
+      "dependencies": [
+        "mediawiki.util"
+      ]
+    }
+  }
+}
