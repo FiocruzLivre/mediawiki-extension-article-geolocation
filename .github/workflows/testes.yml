@@ -73,3 +73,25 @@ jobs:
       - name: PHPUnit integração com GeoData
         working-directory: ${{ runner.temp }}/mediawiki
         run: composer phpunit:entrypoint -- extensions/ArticleGeolocation/tests/phpunit/integration --colors=never
+
+      - name: Exercitar o endpoint público por HTTP
+        shell: bash
+        working-directory: ${{ runner.temp }}/mediawiki
+        run: |
+          set -euo pipefail
+          php -S 127.0.0.1:8765 -t . > "$RUNNER_TEMP/mediawiki-http.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 20); do
+            if curl -fsS -D "$RUNNER_TEMP/geo-headers" \
+                -o "$RUNNER_TEMP/geo-body" \
+                'http://127.0.0.1:8765/index.php?title=Special:ArticleGeolocationFeed'; then
+              break
+            fi
+            sleep 1
+          done
+          grep -qi '^Content-Type: application/geo+json' "$RUNNER_TEMP/geo-headers"
+          grep -qi '^Cache-Control: no-store' "$RUNNER_TEMP/geo-headers"
+          php -r '$data = json_decode(file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR); if ($data["type"] !== "FeatureCollection" || $data["features"] !== []) exit(1);' "$RUNNER_TEMP/geo-body"
+          ! grep -qi '<html' "$RUNNER_TEMP/geo-body"
+
