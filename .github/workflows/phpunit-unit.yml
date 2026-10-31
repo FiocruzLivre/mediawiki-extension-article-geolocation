@@ -26,6 +26,7 @@ jobs:
           git clone --depth 1 --branch 1.46.2 \
             https://gerrit.wikimedia.org/r/mediawiki/core.git "$RUNNER_TEMP/mediawiki"
           ln -s "$GITHUB_WORKSPACE" "$RUNNER_TEMP/mediawiki/extensions/ArticleGeolocation"
+          ln -s "$GITHUB_WORKSPACE/tests/phpunit/LocalSettings.unit.php" "$RUNNER_TEMP/mediawiki/LocalSettings.php"
           cd "$RUNNER_TEMP/mediawiki"
           composer install --no-interaction --prefer-dist --no-progress
       - name: Validar regras de negócio sem banco de dados
