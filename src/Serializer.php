@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Mapa\GeoFeed;
+namespace MediaWiki\Extension\ArticleGeolocation;
 
 use DomainException;
 

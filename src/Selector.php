@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace Mapa\GeoFeed;
+namespace MediaWiki\Extension\ArticleGeolocation;
 
 use LogicException;
-use Mapa\GeoFeed\Contracts\Approvals;
-use Mapa\GeoFeed\Contracts\ArticleSource;
+use MediaWiki\Extension\ArticleGeolocation\Contracts\Approvals;
+use MediaWiki\Extension\ArticleGeolocation\Contracts\ArticleSource;
 
 /** Approval-first, indexed batch fetching; visitors never call this service. */
 final readonly class Selector {

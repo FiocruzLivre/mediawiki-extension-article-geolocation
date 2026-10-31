@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace Mapa\GeoFeed;
+namespace MediaWiki\Extension\ArticleGeolocation;
 
-use Mapa\GeoFeed\Contracts\ChangeEpoch;
-use Mapa\GeoFeed\Contracts\Lock;
-use Mapa\GeoFeed\Contracts\Publisher;
+use MediaWiki\Extension\ArticleGeolocation\Contracts\ChangeEpoch;
+use MediaWiki\Extension\ArticleGeolocation\Contracts\Lock;
+use MediaWiki\Extension\ArticleGeolocation\Contracts\Publisher;
 
 /**
  * One generated artifact per run. A source failure or empty unexpected result
@@ -21,7 +21,7 @@ final readonly class Consolidator {
     ) {}
 
     /** @return array{status:string,count:int,sha256:?string} */
-    public function run(bool $dryRun = false, bool $allowExplicitEmpty = false): array {
+    public function run(bool $dryRun = false): array {
         if (!$this->lock->acquire()) {
             return ['status' => 'busy', 'count' => 0, 'sha256' => null];
         }
@@ -29,9 +29,6 @@ final readonly class Consolidator {
             $before = $this->epoch->current();
             $articles = $this->selector->select();
             $count = count($articles);
-            if ($count === 0 && !$allowExplicitEmpty) {
-                return ['status' => 'empty_preserved', 'count' => 0, 'sha256' => null];
-            }
             $json = $this->serializer->encode($articles);
             $hash = hash('sha256', $json);
             if ($before !== $this->epoch->current()) {

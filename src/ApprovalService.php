@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace Mapa\GeoFeed;
+namespace MediaWiki\Extension\ArticleGeolocation;
 
 use DomainException;
-use Mapa\GeoFeed\Contracts\Approvals;
-use Mapa\GeoFeed\Contracts\ArticleSource;
+use MediaWiki\Extension\ArticleGeolocation\Contracts\Approvals;
+use MediaWiki\Extension\ArticleGeolocation\Contracts\ArticleSource;
 
 final readonly class ApprovalService {
     /** @param callable(int):bool $mayApprove Authorization evaluated by server, not article text. */

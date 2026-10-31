@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Mapa\GeoFeed\Contracts;
+namespace MediaWiki\Extension\ArticleGeolocation\Contracts;
 
 interface Approvals {
     /** @return iterable<array{pageId:int,fingerprint:string}> */

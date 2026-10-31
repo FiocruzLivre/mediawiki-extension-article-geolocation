@@ -9,5 +9,8 @@
   "type": "other",
   "requires": {
     "MediaWiki": ">= 1.46.0"
+  },
+  "AutoloadNamespaces": {
+    "MediaWiki\\Extension\\ArticleGeolocation\\": "src/"
   }
 }
