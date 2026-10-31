@@ -51,4 +51,45 @@ class WikiArticleSourceIntegrationTest extends MediaWikiIntegrationTestCase {
         $this->editPage( $page, "12|1|2|exata|evento\n" );
         $this->assertSame( '12|1|2|exata|evento', trim( ( new WikiArticleSource() )->approvalsText() ) );
     }
+
+    public function testGeoDataAloneDoesNotAuthorizePublishing(): void {
+        $page = $this->getNonexistingTestPage();
+        $this->editPage( $page, '{{#coordinates:-3.68274|-40.3512|primary}}' );
+        $this->runJobs();
+
+        $id = $page->getId();
+        $approved = ( new ApprovalRegistry() )->parse( "$id|-3.68274|-40.3512|municipio|atuacao" );
+        $source = new WikiArticleSource();
+        $this->assertSame(
+            [],
+            json_decode( ( new ApprovedFeed( $source ) )->encode( $approved ), true )['features']
+        );
+    }
+
+    public function testApprovalIsRevokedByChangingCoordinatesInActualWiki(): void {
+        $page = $this->getNonexistingTestPage();
+        $markup = '{{Geolocalização do artigo|latitude=-3|longitude=-40'
+            . '|precisao=municipio|tipo_local=atuacao|exibir_no_mapa=sim}}'
+            . "\n{{#coordinates:-3|-40|primary}}";
+        $this->editPage( $page, $markup );
+        $this->runJobs();
+        $id = $page->getId();
+        $source = new WikiArticleSource();
+        $approval = ( new ApprovalRegistry() )->parse( "$id|-3|-40|municipio|atuacao" );
+        $this->assertCount(
+            1,
+            json_decode( ( new ApprovedFeed( $source ) )->encode( $approval ), true )['features']
+        );
+
+        $this->editPage( $page, str_replace( '-3', '-4', $markup ) );
+        $this->runJobs();
+        $this->assertSame(
+            [],
+            json_decode( ( new ApprovedFeed( $source ) )->encode( $approval ), true )['features']
+        );
+        $this->assertSame(
+            [],
+            json_decode( ( new ApprovedFeed( $source ) )->encode( [] ), true )['features']
+        );
+    }
 }
