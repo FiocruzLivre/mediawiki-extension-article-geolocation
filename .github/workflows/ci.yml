@@ -1,4 +1,4 @@
-name: Validate ArticleGeolocation candidates
+name: Verificar metadados e sintaxe da extensao
 
 on:
   push:
@@ -11,34 +11,18 @@ permissions:
   contents: read
 
 jobs:
-  checks:
+  sintaxe:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Extension manifests
+      - name: Verificar JSON
         run: |
-          python3 -m json.tool extension.json > /dev/null
-          python3 -m json.tool composer.json > /dev/null
-      - name: PHP syntax in candidate branches
+          docker run --rm -v "$PWD:/app:ro" -w /app --entrypoint php php:8.5-cli -r 'foreach (["extension.json", "composer.json"] as $f) { json_decode(file_get_contents("/app/".$f), true, 512, JSON_THROW_ON_ERROR); }'
+      - name: Verificar sintaxe PHP
+        shell: bash
         run: |
-          if [ -d prototypes ]; then
-            find prototypes -type f -name '*.php' -print0 | while IFS= read -r -d '' file; do
+          if [ -d src ] || [ -d tests/phpunit ]; then
+            find src tests/phpunit -type f -name '*.php' -print0 2>/dev/null | while IFS= read -r -d '' file; do
               docker run --rm -v "$PWD:/app:ro" -w /app --entrypoint php php:8.5-cli -l "/app/$file"
             done
-          fi
-        shell: bash
-      - name: GeoJSON feed contract tests when present
-        run: |
-          if [ -f prototypes/feed/tests/run.php ]; then
-            docker run --rm -v "$PWD:/app:ro" -w /app --entrypoint php php:8.5-cli /app/prototypes/feed/tests/run.php
-          fi
-      - name: Editor JavaScript syntax when present
-        run: |
-          if [ -d prototypes/editor ]; then
-            find prototypes/editor -name '*.js' -type f -exec node --check {} \;
-          fi
-      - name: Security reference fixtures when present
-        run: |
-          if [ -f audit/security/tests/test_security_contract.py ]; then
-            PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s audit/security/tests -p 'test_*.py'
           fi

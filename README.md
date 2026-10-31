@@ -1,14 +1,9 @@
-# ArticleGeolocation — MediaWiki extension (work in progress)
+# ArticleGeolocation
 
-FiocruzLivre extension project for optional article geolocation and a derived,
-moderated GeoJSON feed backed by GeoData and Page Forms.
+Extensão MediaWiki para associar localizações opcionais a artigos e produzir dados GeoJSON para mapas públicos, com integração prevista com Page Forms, GeoData e Kartographer.
 
-**Not release-ready.** The original implementation branches are archived in
-this repository as *separate candidate branches*. No prototype is integrated
-into `main`; enabling this minimal manifest does not enable functionality.
+## Desenvolvimento
 
-Ported components must pass real MediaWiki integration, access-control and
-concurrency tests before production use. Site-specific wiki pages, content
-migrations and site configurations belong to `mapa-mov-saude`.
+O código funcional ainda está em revisão e **não deve ser instalado em produção**. Os testes PHP devem usar PHPUnit integrado ao MediaWiki em `tests/phpunit/unit/` e `tests/phpunit/integration/`. Os testes de navegador verificam a experiência de escolha de localização.
 
-See individual `port/*` branches for original upstream PR/commit attribution.
+A configuração e os formulários específicos do Mapa MovSaúde ficam em [mapa-mov-saude](https://github.com/FiocruzLivre/mapa-mov-saude); esta extensão não deve conter a configuração de nenhuma das duas wikis.
