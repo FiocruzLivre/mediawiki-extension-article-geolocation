@@ -85,7 +85,7 @@ jobs:
           for attempt in $(seq 1 20); do
             if curl -fsS -D "$RUNNER_TEMP/geo-headers" \
                 -o "$RUNNER_TEMP/geo-body" \
-                'http://127.0.0.1:8765/index.php?title=Special:ArticleGeolocationFeed'; then
+                'http://127.0.0.1:8765/index.php?title=Especial:ArticleGeolocationFeed'; then
               break
             fi
             sleep 1
