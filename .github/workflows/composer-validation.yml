@@ -1,0 +1,27 @@
+name: Validar Composer e sintaxe PHP
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  composer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2.40.0
+        with:
+          php-version: '8.5'
+          tools: composer:v2
+      - name: Validar manifesto, mensagens e sintaxe
+        run: |
+          composer validate --no-check-publish
+          php -r 'json_decode(file_get_contents("extension.json"), true, 512, JSON_THROW_ON_ERROR);'
+          find src tests -type f -name '*.php' -exec php -l {} \;
+          git diff --check

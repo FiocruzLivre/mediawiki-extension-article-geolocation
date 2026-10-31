@@ -1,30 +1,28 @@
 # ArticleGeolocation
 
-Extensão MediaWiki para publicar um GeoJSON de pontos geográficos **aprovados editorialmente**, usando a extensão GeoData como fonte de coordenadas. A edição dos artigos permanece a cargo de Page Forms e dos editores nativos do MediaWiki.
+**Mapas colaborativos com localização aprovada por pessoas, não apenas por algoritmos.**
 
-## Instalação
+ArticleGeolocation transforma coordenadas presentes em artigos MediaWiki em um feed GeoJSON moderado, adequado a mapas de iniciativas, territórios e organizações. O editor informa um local; a equipe editorial decide se ele deve aparecer no mapa público.
 
-Requer MediaWiki 1.46+, PHP 8.3+ e GeoData instalado. Coloque o repositório em `extensions/ArticleGeolocation` e acrescente `wfLoadExtension( 'ArticleGeolocation' );` à configuração da wiki. Teste primeiro em uma instalação descartável.
+- **Governança:** a inclusão depende de aprovação editorial independente.
+- **Correção:** mudanças ou remoções de localização invalidam a aprovação anterior.
+- **Integração:** usa o GeoData e os recursos existentes do MediaWiki, sem criar banco ou sistema de publicações paralelo.
+- **Interoperabilidade:** fornece GeoJSON para páginas, mapas e aplicações externas.
 
-A edição de localização de cada artigo usa a predefinição `Geolocalização do artigo`, com `latitude`, `longitude`, `precisao`, `tipo_local` e `exibir_no_mapa=sim`. A predefinição só pode publicar coordenadas da própria página por `#coordinates`. **Solicitação por autor não é aprovação editorial.**
+## Integração com formulários
 
-## Aprovação editorial
+O formulário é disponibilizado pelo **Page Forms do site**, não por esta extensão. Veja o exemplo integrado ao [MapaMovSaúde](https://github.com/FiocruzLivre/mapa-mov-saude). A captura ilustrativa é gerada e verificada automaticamente a partir do formulário real desse projeto.
 
-Um administrador autorizado a editar a interface (`editinterface`) cria a página `MediaWiki:ArticleGeolocation-aprovacoes`. Cada linha tem exatamente:
+## Começar
 
-```text
-# id|latitude|longitude|precisao|tipo_local
-123|-3.68274|-40.3512|municipio|atuacao
-```
+Requer MediaWiki 1.46+, PHP 8.3+ e a extensão GeoData. Instale este repositório como `extensions/ArticleGeolocation` e adicione ao `LocalSettings.php`:
 
-É um exemplo fictício. Antes de inserir uma linha, o revisor deve conferir o ID do artigo, o local e os campos efetivamente publicados. Editar essa página é uma decisão editorial independente, com histórico de revisões nativo. Editores comuns de artigos não devem receber `editinterface`. A remoção da linha revoga a aprovação. Um artigo excluído, redirecionado, não público ou com coordenadas alteradas deixa de ser elegível automaticamente.
+`wfLoadExtension( 'ArticleGeolocation' );`
 
-O feed fica em `Special:ArticleGeolocationFeed`, retornando `application/geo+json`. Consultas são feitas **sem cache** à base primária para não manter uma localização retirada por uma janela de atualização. O sistema não cria tabelas, filas, cópias de coordenadas ou tarefas assíncronas. Uma falha ao ler o registro resulta em HTTP 503 sem conteúdo sensível. Meça o tempo do endpoint antes de habilitá-lo para milhares de artigos.
+Um editor pode solicitar a publicação usando a predefinição `Geolocalização do artigo` da wiki; aprovação exige o direito `editinterface` para editar `MediaWiki:ArticleGeolocation-aprovacoes`. O feed aprovado é disponibilizado em `Special:ArticleGeolocationFeed`. **O GeoData possui API própria: não registre localização confidencial esperando protegê-la apenas pela aprovação deste feed.**
 
-**Atenção:** GeoData já fornece coordenadas na API própria, independentemente da aprovação deste feed. Nunca registre endereços privados ou localizações sensíveis esperando que o mecanismo de aprovação os torne secretos.
+## Comunidade e suporte
 
-## Testes
+Problemas, melhorias e contribuições podem ser registrados em [issues](https://github.com/FiocruzLivre/mediawiki-extension-article-geolocation/issues) e enviados por pull request. Para implantação ou suporte profissional, consulte os mantenedores sobre a disponibilidade de atendimento; esse serviço é independente do uso gratuito do software livre.
 
-Os testes usam PHPUnit por meio do MediaWiki. Execute as suítes `tests/phpunit/unit` e `tests/phpunit/integration` em uma instância de teste com banco descartável e GeoData. Não execute testes que criam páginas no banco de produção.
-
-A configuração, os formulários e o conteúdo específicos do MapaMovSaúde ficam no repositório `FiocruzLivre/mapa-mov-saude`.
+Diretrizes para contribuição e testes estão em [AGENTS.md](AGENTS.md).

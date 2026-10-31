@@ -1,0 +1,33 @@
+name: PHPUnit unitário
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2.40.0
+        with:
+          php-version: '8.5'
+          extensions: mbstring, intl, dom, xml, mysqlnd, pdo_mysql, gd, zip, fileinfo
+          coverage: none
+          tools: composer:v2
+      - name: Preparar MediaWiki para testes unitários
+        run: |
+          git clone --depth 1 --branch 1.46.2 \
+            https://gerrit.wikimedia.org/r/mediawiki/core.git "$RUNNER_TEMP/mediawiki"
+          ln -s "$GITHUB_WORKSPACE" "$RUNNER_TEMP/mediawiki/extensions/ArticleGeolocation"
+          cd "$RUNNER_TEMP/mediawiki"
+          composer install --no-interaction --prefer-dist --no-progress
+      - name: Validar regras de negócio sem banco de dados
+        working-directory: ${{ runner.temp }}/mediawiki
+        run: composer phpunit:entrypoint -- extensions/ArticleGeolocation/tests/phpunit/unit --colors=never
