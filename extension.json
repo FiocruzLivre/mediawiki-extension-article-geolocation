@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "ArticleGeolocation",
-  "version": "0.0.0-dev",
+  "version": "0.1.0-dev",
   "author": [
     "FiocruzLivre"
   ],
@@ -9,5 +9,16 @@
   "type": "other",
   "requires": {
     "MediaWiki": ">= 1.46.0"
+  },
+  "AutoloadNamespaces": {
+    "MediaWiki\\Extension\\ArticleGeolocation\\": "src/"
+  },
+  "SpecialPages": {
+    "ArticleGeolocationFeed": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialGeoJson"
+  },
+  "MessagesDirs": {
+    "ArticleGeolocation": [
+      "i18n"
+    ]
   }
 }

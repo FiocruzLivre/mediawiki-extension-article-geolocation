@@ -1,0 +1,75 @@
+name: Testar a integração de geolocalização
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phpunit:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11.8.9
+        env:
+          MARIADB_DATABASE: mapageo_test
+          MARIADB_USER: mapageo
+          MARIADB_PASSWORD: senha_de_teste
+          MARIADB_ROOT_PASSWORD: root_de_teste
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=30
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2.40.0
+        with:
+          php-version: '8.5'
+          extensions: mbstring, intl, dom, xml, mysqlnd, pdo_mysql, gd, zip, fileinfo
+          coverage: none
+          tools: composer:v2
+      - name: Validar manifestos e sintaxe
+        run: |
+          composer validate --no-check-publish
+          find src tests -type f -name '*.php' -exec php -l {} \;
+          git diff --check
+
+      - name: Preparar MediaWiki 1.46.2 e GeoData
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch 1.46.2 \
+            https://gerrit.wikimedia.org/r/mediawiki/core.git "$RUNNER_TEMP/mediawiki"
+          git clone --depth 1 --branch REL1_46 \
+            https://gerrit.wikimedia.org/r/mediawiki/extensions/GeoData.git \
+            "$RUNNER_TEMP/mediawiki/extensions/GeoData"
+          ln -s "$GITHUB_WORKSPACE" "$RUNNER_TEMP/mediawiki/extensions/ArticleGeolocation"
+          cd "$RUNNER_TEMP/mediawiki"
+          composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Instalar banco de teste descartável
+        working-directory: ${{ runner.temp }}/mediawiki
+        run: |
+          php maintenance/run.php install \
+            --dbtype mysql --dbserver 127.0.0.1 \
+            --dbname mapageo_test --dbuser mapageo --dbpass senha_de_teste \
+            --installdbuser mapageo --installdbpass senha_de_teste \
+            --server http://localhost --scriptpath / \
+            --pass senha_administrador_teste --lang pt-br \
+            --extensions GeoData,ArticleGeolocation \
+            "Mapa de teste" editor_teste
+
+      - name: PHPUnit unitário
+        working-directory: ${{ runner.temp }}/mediawiki
+        run: composer phpunit:entrypoint -- extensions/ArticleGeolocation/tests/phpunit/unit --colors=never
+
+      - name: PHPUnit integração com GeoData
+        working-directory: ${{ runner.temp }}/mediawiki
+        run: composer phpunit:entrypoint -- extensions/ArticleGeolocation/tests/phpunit/integration --colors=never
