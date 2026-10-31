@@ -1,0 +1,25 @@
+name: Testes de navegador do seletor geográfico
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  navegador:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: prototypes/editor
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Instalar dependências de teste
+        run: |
+          npm ci --include=dev --ignore-scripts --no-audit --no-fund
+          npx playwright install --with-deps chromium firefox
+      - name: Testar desktop, Firefox e dispositivo móvel
+        run: npx playwright test --reporter=list
