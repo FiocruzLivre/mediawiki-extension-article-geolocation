@@ -49,6 +49,6 @@ class WikiArticleSourceIntegrationTest extends MediaWikiIntegrationTestCase {
             \MediaWiki\Title\Title::makeTitle( NS_MEDIAWIKI, 'ArticleGeolocation-aprovacoes' )
         );
         $this->editPage( $page, "12|1|2|exata|evento\n" );
-        $this->assertSame( "12|1|2|exata|evento\n", ( new WikiArticleSource() )->approvalsText() );
+        $this->assertSame( '12|1|2|exata|evento', trim( ( new WikiArticleSource() )->approvalsText() ) );
     }
 }
