@@ -90,6 +90,11 @@ jobs:
             fi
             sleep 1
           done
+          echo 'Resposta HTTP de teste:'
+          sed -n '1,20p' "$RUNNER_TEMP/geo-headers"
+          echo 'Primeiros bytes do corpo:'
+          head -c 400 "$RUNNER_TEMP/geo-body"
+          echo
           grep -qi '^Content-Type: application/geo+json' "$RUNNER_TEMP/geo-headers"
           grep -qi '^Cache-Control: no-store' "$RUNNER_TEMP/geo-headers"
           php -r '$data = json_decode(file_get_contents($argv[1]), true, 512, JSON_THROW_ON_ERROR); if ($data["type"] !== "FeatureCollection" || $data["features"] !== []) exit(1);' "$RUNNER_TEMP/geo-body"
