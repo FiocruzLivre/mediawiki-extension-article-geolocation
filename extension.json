@@ -19,6 +19,19 @@
   "AutoloadNamespaces": {
     "MediaWiki\\Extension\\ArticleGeolocation\\": "src/"
   },
+  "Hooks": {
+    "PageSaveComplete": "notification",
+    "BeforeCreateEchoEvent": "notification"
+  },
+  "HookHandlers": {
+    "notification": {
+      "class": "MediaWiki\\Extension\\ArticleGeolocation\\NotificationHooks"
+    }
+  },
+  "DefaultUserOptions": {
+    "echo-subscriptions-web-article-geolocation": true,
+    "echo-subscriptions-email-article-geolocation": false
+  },
   "SpecialPages": {
     "ArticleGeolocationFeed": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialGeoJson",
     "ArticleGeolocationReview": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialReview"

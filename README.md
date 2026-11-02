@@ -21,7 +21,13 @@ Requer a extensão GeoData e versões de MediaWiki e PHP compatíveis com os req
 
 Um editor pode solicitar a publicação usando a predefinição `Geolocalização do artigo` da wiki; a lista de aprovações utiliza linhas `ID|latitude|longitude` na página de controle `MediaWiki:ArticleGeolocation-aprovacoes`. A página `Especial:ArticleGeolocationReview` permite que administradores com o direito específico `articlegeolocation-review` consultem as histórias geolocalizadas, abram a história, editem a localização no formulário Page Forms e aprovem ou revoguem o ponto. A extensão concede esse direito ao grupo `sysop` por padrão, sem exigir `editinterface`. A aprovação é ligada às coordenadas atuais e expira se forem alteradas. Não é necessário informar o tipo ou a precisão da localização.
 
-**Antes de produção:** validar visualmente o fluxo administrativo, registrar a captura no PR sem versioná-la e decidir como conceder a moderação sem distribuir desnecessariamente o direito abrangente `editinterface`. O feed aprovado é disponibilizado em `Special:ArticleGeolocationFeed`. **O GeoData possui API própria: não registre localização confidencial esperando protegê-la apenas pela aprovação deste feed.**
+### Fila e avisos
+
+A página `Especial:ArticleGeolocationReview` mostra contadores e filtros de **Pendentes**, **Aprovadas** e **Todas**, além da revisão individual com mapa e ações de aprovação e revogação. O acesso exige apenas `articlegeolocation-review`, concedido ao grupo `sysop` por padrão.
+
+Quando a extensão Echo estiver instalada e ativada, a criação ou alteração de uma localização solicitada gera um aviso interno para moderadores. Edições comuns da mesma história não geram novos avisos. Cada moderador pode ativar o **e-mail** nas preferências de notificações do MediaWiki; essa opção começa desligada para evitar mensagens excessivas. A fila funciona mesmo sem Echo. O envio real de e-mail depende de um servidor SMTP configurado no MediaWiki.
+
+**Antes de produção:** validar visualmente o fluxo administrativo e registrar a captura no PR sem versioná-la. A permissão específica `articlegeolocation-review` evita distribuir desnecessariamente o direito amplo `editinterface`. O feed aprovado é disponibilizado em `Special:ArticleGeolocationFeed`. **O GeoData possui API própria: não registre localização confidencial esperando protegê-la apenas pela aprovação deste feed.**
 
 ## Comunidade e suporte
 

@@ -5,5 +5,10 @@
     ]
   },
   "articlegeolocationfeed": "Mapa geográfico aprovado",
-  "articlegeolocationreview": "Moderação das localizações"
+  "articlegeolocationreview": "Moderação das localizações",
+  "articlegeolocation-notification-category": "Moderação de localizações",
+  "articlegeolocation-notification-tooltip": "Solicitações de localização para aprovação",
+  "articlegeolocation-notification-header": "A localização da história $1 precisa de revisão.",
+  "articlegeolocation-notification-subject": "MapaMovSaúde: localização aguardando aprovação",
+  "articlegeolocation-notification-link": "Abrir fila de moderação"
 }

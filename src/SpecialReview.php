@@ -74,25 +74,48 @@ final class SpecialReview extends SpecialPage {
             return;
         }
 
-        $out->addHTML(Html::element('p', [],
-            'Abra uma história para conferir seu conteúdo e seu ponto no mapa. '
-            . 'A localização pode ser corrigida no mesmo formulário usado pelos autores.'));
-        $out->addHTML(Html::openElement('ul'));
+        $states = ['pending' => [], 'approved' => []];
         foreach ($articles as $article) {
             $fingerprint = $article->fingerprint();
             $isApproved = isset($approved[$article->id]) && $fingerprint !== null
                 && hash_equals($approved[$article->id], $fingerprint);
-            $url = self::getTitleFor('ArticleGeolocationReview',
-                (string)$article->id)->getLocalURL();
-            $status = $isApproved ? 'Aprovada' : 'Pendente de revisão';
+            $states[$isApproved ? 'approved' : 'pending'][] = $article;
+        }
+
+        $filter = $this->getRequest()->getVal('status', 'pending');
+        if (!in_array($filter, ['pending', 'approved', 'all'], true)) {
+            $filter = 'pending';
+        }
+        $out->addHTML(Html::element('p', [],
+            'Confira o conteúdo e o ponto antes de decidir. Alterações de localização '
+            . 'depois da aprovação exigem uma nova revisão.'));
+        $out->addHTML(Html::rawElement('div', ['class' => 'mw-parser-output'],
+            Html::element('strong', [], 'Pendentes: ' . count($states['pending']))
+            . ' · ' . Html::element('strong', [], 'Aprovadas: ' . count($states['approved']))
+            . ' · ' . Html::element('strong', [], 'Total: ' . count($articles))));
+        $links = [];
+        foreach (['pending' => 'Pendentes', 'approved' => 'Aprovadas', 'all' => 'Todas'] as $key => $label) {
+            $url = self::getTitleFor('ArticleGeolocationReview')->getLocalURL(['status' => $key]);
+            $links[] = $key === $filter
+                ? Html::element('strong', [], $label)
+                : Html::element('a', ['href' => $url], $label);
+        }
+        $out->addHTML(Html::rawElement('nav', ['aria-label' => 'Filtrar revisões'],
+            implode(' · ', $links)));
+        $selected = $filter === 'all' ? array_merge($states['pending'], $states['approved']) : $states[$filter];
+        usort($selected, static fn (Article $a, Article $b): int =>
+            strcasecmp($a->title, $b->title));
+        $out->addHTML(Html::openElement('ul', ['class' => 'mw-category']));
+        foreach ($selected as $article) {
+            $url = self::getTitleFor('ArticleGeolocationReview', (string)$article->id)->getLocalURL();
+            $isApproved = in_array($article, $states['approved'], true);
             $out->addHTML(Html::rawElement('li', [],
                 Html::element('a', ['href' => $url], $article->title)
-                . ' — ' . htmlspecialchars($status, ENT_QUOTES)));
+                . ' — ' . ($isApproved ? 'Aprovada' : 'Pendente de revisão')));
         }
         $out->addHTML(Html::closeElement('ul'));
-        if ($articles === []) {
-            $out->addHTML(Html::element('p', [],
-                'Não há histórias com localizações válidas para revisão.'));
+        if ($selected === []) {
+            $out->addHTML(Html::element('p', [], 'Nenhuma história encontrada neste filtro.'));
         }
     }
 
@@ -143,11 +166,20 @@ final class SpecialReview extends SpecialPage {
             $isApproved ? 'Localização aprovada' : 'Localização pendente de aprovação'));
 
         [$lat, $lon] = $point->canonical();
+        $geoJson = json_encode([
+            'type' => 'FeatureCollection',
+            'features' => [[
+                'type' => 'Feature',
+                'geometry' => [
+                    'type' => 'Point',
+                    'coordinates' => [(float)$lon, (float)$lat],
+                ],
+                'properties' => (object)[],
+            ]],
+        ], JSON_THROW_ON_ERROR);
         $out->addWikiTextAsInterface(
             '<mapframe width="540" height="320" zoom="10" latitude="' . $lat
-            . '" longitude="' . $lon . '">'
-            . '<marker latitude="' . $lat . '" longitude="' . $lon . '" />'
-            . '</mapframe>'
+            . '" longitude="' . $lon . '">' . $geoJson . '</mapframe>'
         );
 
         $version = $registryPage->getRevisionRecord()?->getId() ?? 0;
