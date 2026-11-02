@@ -10,6 +10,12 @@
   "requires": {
     "MediaWiki": ">= 1.46.0"
   },
+  "AvailableRights": ["articlegeolocation-review"],
+  "GroupPermissions": {
+    "sysop": {
+      "articlegeolocation-review": true
+    }
+  },
   "AutoloadNamespaces": {
     "MediaWiki\\Extension\\ArticleGeolocation\\": "src/"
   },

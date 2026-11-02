@@ -17,7 +17,7 @@ use RuntimeException;
  */
 final class SpecialReview extends SpecialPage {
     public function __construct() {
-        parent::__construct('ArticleGeolocationReview', 'editinterface');
+        parent::__construct('ArticleGeolocationReview', 'articlegeolocation-review');
     }
 
     public function execute($subPage): void {
