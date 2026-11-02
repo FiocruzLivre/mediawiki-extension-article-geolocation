@@ -19,7 +19,7 @@ Requer MediaWiki 1.46+, PHP 8.3+ e a extensão GeoData. Instale este repositóri
 
 `wfLoadExtension( 'ArticleGeolocation' );`
 
-Um editor pode solicitar a publicação usando a predefinição `Geolocalização do artigo` da wiki; aprovação exige o direito `editinterface` para editar `MediaWiki:ArticleGeolocation-aprovacoes`. O feed aprovado é disponibilizado em `Special:ArticleGeolocationFeed`. **O GeoData possui API própria: não registre localização confidencial esperando protegê-la apenas pela aprovação deste feed.**
+Um editor pode solicitar a publicação usando a predefinição `Geolocalização do artigo` da wiki; a lista de aprovações usa linhas `ID|latitude|longitude` e exige o direito `editinterface` para editar `MediaWiki:ArticleGeolocation-aprovacoes`. A interface editorial de revisão ainda precisa ser concluída antes do uso em produção. O feed aprovado é disponibilizado em `Special:ArticleGeolocationFeed`. **O GeoData possui API própria: não registre localização confidencial esperando protegê-la apenas pela aprovação deste feed.**
 
 ## Comunidade e suporte
 

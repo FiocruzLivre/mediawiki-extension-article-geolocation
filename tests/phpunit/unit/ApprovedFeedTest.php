@@ -51,7 +51,7 @@ class ApprovedFeedTest extends MediaWikiUnitTestCase {
     private function approvals( array $ids ): array {
         $rows = [];
         foreach ( $ids as $id ) {
-            $rows[] = "$id|-3.68274|-40.3512|municipio|atuacao";
+            $rows[] = "$id|-3.68274|-40.3512";
         }
         return ( new ApprovalRegistry() )->parse( implode( "\n", $rows ) );
     }

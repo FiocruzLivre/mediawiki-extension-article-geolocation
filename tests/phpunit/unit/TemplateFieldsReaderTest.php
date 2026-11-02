@@ -32,6 +32,17 @@ class TemplateFieldsReaderTest extends MediaWikiUnitTestCase {
         $this->assertSame([-40.3512, -3.68274], $fields->point->coordinates());
     }
 
+    public function testMapSelectionDoesNotRequireGeographicClassification(): void {
+        $fields = (new TemplateFieldsReader())->parse(
+            '{{Geolocalização do artigo|localizacao=-3.68274, -40.3512|exibir_no_mapa=sim}}'
+        );
+        $this->assertFalse($fields->invalid);
+        $this->assertTrue($fields->requested);
+        $this->assertSame([-40.3512, -3.68274], $fields->point->coordinates());
+        $this->assertSame('', $fields->precision);
+        $this->assertSame('', $fields->locationType);
+    }
+
     public function testNormalArticleHasNoLocation(): void {
         $fields = ( new TemplateFieldsReader() )->parse( 'Texto livre sem campos.' );
         $this->assertFalse( $fields->invalid );

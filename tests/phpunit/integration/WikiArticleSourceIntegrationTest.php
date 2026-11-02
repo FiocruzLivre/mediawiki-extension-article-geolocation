@@ -34,7 +34,7 @@ class WikiArticleSourceIntegrationTest extends MediaWikiIntegrationTestCase {
         $this->assertTrue( $articles[0]->eligible() );
         $this->assertSame( [ -40.3512, -3.68274 ], $articles[0]->point()->coordinates() );
 
-        $approved = ( new ApprovalRegistry() )->parse( "$id|-3.68274|-40.3512|municipio|atuacao" );
+        $approved = ( new ApprovalRegistry() )->parse( "$id|-3.68274|-40.3512" );
         $features = json_decode( ( new ApprovedFeed( $source ) )->encode( $approved ), true )['features'];
         $this->assertCount( 1, $features );
 
@@ -58,7 +58,7 @@ class WikiArticleSourceIntegrationTest extends MediaWikiIntegrationTestCase {
         $this->runJobs();
 
         $id = $page->getId();
-        $approved = ( new ApprovalRegistry() )->parse( "$id|-3.68274|-40.3512|municipio|atuacao" );
+        $approved = ( new ApprovalRegistry() )->parse( "$id|-3.68274|-40.3512" );
         $source = new WikiArticleSource();
         $this->assertSame(
             [],
@@ -75,7 +75,7 @@ class WikiArticleSourceIntegrationTest extends MediaWikiIntegrationTestCase {
         $this->runJobs();
         $id = $page->getId();
         $source = new WikiArticleSource();
-        $approval = ( new ApprovalRegistry() )->parse( "$id|-3|-40|municipio|atuacao" );
+        $approval = ( new ApprovalRegistry() )->parse( "$id|-3|-40" );
         $this->assertCount(
             1,
             json_decode( ( new ApprovedFeed( $source ) )->encode( $approval ), true )['features']

@@ -30,7 +30,7 @@ class ArticleTest extends MediaWikiUnitTestCase {
         $this->assertNotSame( $first->fingerprint(), $this->article( [
             'primary' => Point::fromNumbers( -3.68, -40.35 )
         ] )->fingerprint() );
-        $this->assertNotSame( $first->fingerprint(), $this->article( [
+        $this->assertSame( $first->fingerprint(), $this->article( [
             'locationType' => 'evento'
         ] )->fingerprint() );
     }

@@ -14,8 +14,8 @@ class ApprovalRegistryTest extends MediaWikiUnitTestCase {
     }
 
     public function testHumanReadableApprovalMatchesCanonicalPoint(): void {
-        $a = $this->parse( "# revisão editorial\n12|-3.68274|-40.3512|municipio|atuacao\n" );
-        $b = $this->parse( "12|-3.68274000|-40.35120000|municipio|atuacao" );
+        $a = $this->parse( "# revisão editorial\n12|-3.68274|-40.3512\n" );
+        $b = $this->parse( "12|-3.68274000|-40.35120000" );
         $this->assertSame( $a, $b );
         $this->assertCount( 1, $a );
     }
@@ -27,24 +27,23 @@ class ApprovalRegistryTest extends MediaWikiUnitTestCase {
     }
 
     public static function invalidRegistries(): iterable {
-        yield 'duplicated article' => [ "1|1|1|exata|sede\n1|2|2|exata|sede" ];
-        yield 'out of range' => [ "1|91|1|exata|sede" ];
-        yield 'missing field' => [ "1|1|1|exata" ];
-        yield 'markup' => [ "1|1|1|exata|sede[[Outro]]" ];
-        yield 'invalid type' => [ "1|1|1|exata|pessoal" ];
-        yield 'negative ID' => [ "-2|1|1|exata|sede" ];
-        yield 'scientific coordinate' => [ "1|1e-2|1|exata|sede" ];
-        yield 'empty ID' => [ "|1|1|exata|sede" ];
+        yield 'duplicated article' => [ "1|1|1\n1|2|2" ];
+        yield 'out of range' => [ "1|91|1" ];
+        yield 'missing field' => [ "1|1" ];
+        yield 'markup' => [ "1|1|1|sede[[Outro]]" ];
+        yield 'negative ID' => [ "-2|1|1" ];
+        yield 'scientific coordinate' => [ "1|1e-2|1" ];
+        yield 'empty ID' => [ "|1|1" ];
         yield 'user request disguised as approval' => [ "{{Geolocalização do artigo|latitude=1}}" ];
     }
 
     public function testTenThousandApprovalsAreIndexedWithoutDuplication(): void {
         $lines = [];
         for ( $id = 1; $id <= 10000; $id++ ) {
-            $lines[] = "$id|0|0|municipio|atuacao";
+            $lines[] = "$id|0|0";
         }
         $this->assertCount( 10000, $this->parse( implode( "\n", $lines ) ) );
-        $lines[] = '10001|0|0|municipio|atuacao';
+        $lines[] = '10001|0|0';
         $this->expectException( DomainException::class );
         $this->parse( implode( "\n", $lines ) );
     }

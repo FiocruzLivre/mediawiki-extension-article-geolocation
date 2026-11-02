@@ -54,16 +54,14 @@ final readonly class Article {
         if ($point === null || !$this->requested) {
             return null;
         }
-        return self::fingerprintFor($this->id, $point, $this->precision, $this->locationType);
+        return self::fingerprintFor($this->id, $point);
     }
 
-    public static function fingerprintFor(int $id, Point $point, string $precision, string $type): string {
+    public static function fingerprintFor(int $id, Point $point): string {
         return hash('sha256', json_encode([
-            'v' => 1,
+            'v' => 2,
             'page_id' => $id,
             'coordinates' => $point->canonical(),
-            'precision' => trim($precision),
-            'type' => trim($type),
             'requested' => true,
         ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
     }
