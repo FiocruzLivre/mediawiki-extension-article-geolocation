@@ -44,6 +44,15 @@ class WikiArticleSourceIntegrationTest extends MediaWikiIntegrationTestCase {
         $this->assertSame( [], $features );
     }
 
+    public function testModerationUsesDedicatedRight(): void {
+        $services = $this->getServiceContainer();
+        $page = $services->getSpecialPageFactory()->getPage( 'ArticleGeolocationReview' );
+        $this->assertSame( 'articlegeolocation-review', $page->getRestriction() );
+        $this->assertTrue( $services->getPermissionManager()->userHasRight(
+            $this->getTestSysop()->getUser(), 'articlegeolocation-review'
+        ) );
+    }
+
     public function testApprovalRegistryUsesNativeRevisionedPage(): void {
         $page = $this->getServiceContainer()->getWikiPageFactory()->newFromTitle(
             \MediaWiki\Title\Title::makeTitle( NS_MEDIAWIKI, 'ArticleGeolocation-aprovacoes' )
