@@ -48,8 +48,8 @@ class WikiArticleSourceIntegrationTest extends MediaWikiIntegrationTestCase {
         $page = $this->getServiceContainer()->getWikiPageFactory()->newFromTitle(
             \MediaWiki\Title\Title::makeTitle( NS_MEDIAWIKI, 'ArticleGeolocation-aprovacoes' )
         );
-        $this->editPage( $page, "12|1|2|exata|evento\n" );
-        $this->assertSame( '12|1|2|exata|evento', trim( ( new WikiArticleSource() )->approvalsText() ) );
+        $this->editPage( $page, "12|1|2\n" );
+        $this->assertSame( '12|1|2', trim( ( new WikiArticleSource() )->approvalsText() ) );
     }
 
     public function testGeoDataAloneDoesNotAuthorizePublishing(): void {

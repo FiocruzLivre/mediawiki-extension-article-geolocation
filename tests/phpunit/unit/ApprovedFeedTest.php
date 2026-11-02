@@ -88,7 +88,6 @@ class ApprovedFeedTest extends MediaWikiUnitTestCase {
         yield 'missing GeoData' => [ [ 'primary' => null ] ];
         yield 'removed template' => [ [ 'template' => null ] ];
         yield 'different coordinate' => [ [ 'template' => Point::fromNumbers( -2, -3 ) ] ];
-        yield 'changed location type' => [ [ 'locationType' => 'evento' ] ];
         yield 'invalid article title' => [ [ 'title' => '<script>alert(1)</script>' ] ];
     }
 

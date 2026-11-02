@@ -14,7 +14,8 @@
     "MediaWiki\\Extension\\ArticleGeolocation\\": "src/"
   },
   "SpecialPages": {
-    "ArticleGeolocationFeed": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialGeoJson"
+    "ArticleGeolocationFeed": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialGeoJson",
+    "ArticleGeolocationReview": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialReview"
   },
   "MessagesDirs": {
     "ArticleGeolocation": [
