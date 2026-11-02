@@ -44,7 +44,7 @@ final class TemplateFieldsReader {
             }
             $key = mb_strtolower(trim(substr($part, 0, $equal)));
             $value = trim(substr($part, $equal + 1));
-            if (!in_array($key, ['latitude', 'longitude', 'precisao',
+            if (!in_array($key, ['latitude', 'longitude', 'localizacao', 'precisao',
                 'tipo_local', 'exibir_no_mapa'], true) || array_key_exists($key, $fields)) {
                 return new TemplateFields(invalid: true);
             }
@@ -62,14 +62,21 @@ final class TemplateFieldsReader {
             return new TemplateFields(invalid: true);
         }
         $point = null;
-        $hasLat = array_key_exists('latitude', $fields) && $fields['latitude'] !== '';
-        $hasLon = array_key_exists('longitude', $fields) && $fields['longitude'] !== '';
-        if ($hasLat !== $hasLon) {
+        $hasMap = isset($fields['localizacao']) && $fields['localizacao'] !== '';
+        $hasLat = isset($fields['latitude']) && $fields['latitude'] !== '';
+        $hasLon = isset($fields['longitude']) && $fields['longitude'] !== '';
+        if (($hasMap && ($hasLat || $hasLon)) || ($hasLat !== $hasLon)) {
             return new TemplateFields(invalid: true);
         }
-        if ($hasLat) {
+        if ($hasMap || $hasLat) {
+            $coordinates = $hasMap
+                ? array_map('trim', explode(',', $fields['localizacao']))
+                : [$fields['latitude'], $fields['longitude']];
+            if (count($coordinates) !== 2) {
+                return new TemplateFields(invalid: true);
+            }
             try {
-                $point = Point::fromDecimals($fields['latitude'], $fields['longitude']);
+                $point = Point::fromDecimals($coordinates[0], $coordinates[1]);
             } catch (InvalidArgumentException) {
                 return new TemplateFields(invalid: true);
             }

@@ -22,6 +22,16 @@ class TemplateFieldsReaderTest extends MediaWikiUnitTestCase {
         $this->assertSame( 'atuacao', $fields->locationType );
     }
 
+    public function testReadsMapSelectionFromOptionalForm(): void {
+        $fields = (new TemplateFieldsReader())->parse(
+            '{{Geolocalização do artigo|localizacao=-3.68274, -40.3512'
+            . '|precisao=aproximada|tipo_local=atuacao|exibir_no_mapa=Sim}}'
+        );
+        $this->assertFalse($fields->invalid);
+        $this->assertTrue($fields->requested);
+        $this->assertSame([-40.3512, -3.68274], $fields->point->coordinates());
+    }
+
     public function testNormalArticleHasNoLocation(): void {
         $fields = ( new TemplateFieldsReader() )->parse( 'Texto livre sem campos.' );
         $this->assertFalse( $fields->invalid );
@@ -36,6 +46,9 @@ class TemplateFieldsReaderTest extends MediaWikiUnitTestCase {
 
     public static function provideInvalidWikitext(): iterable {
         yield 'latitude only' => [ '{{Geolocalização do artigo|latitude=12|exibir_no_mapa=sim}}' ];
+        yield 'invalid map coordinate' => [ '{{Geolocalização do artigo|localizacao=91, -40|exibir_no_mapa=sim}}' ];
+        yield 'extra map coordinate' => [ '{{Geolocalização do artigo|localizacao=1, 2, 3|exibir_no_mapa=sim}}' ];
+        yield 'conflicting map and legacy coordinates' => [ '{{Geolocalização do artigo|localizacao=1, 2|latitude=1|longitude=2|exibir_no_mapa=sim}}' ];
         yield 'longitude only' => [ '{{Geolocalização do artigo|longitude=12|exibir_no_mapa=sim}}' ];
         yield 'out of range' => [ '{{Geolocalização do artigo|latitude=91|longitude=0}}' ];
         yield 'duplicate field' => [ '{{Geolocalização do artigo|latitude=1|latitude=2|longitude=0}}' ];

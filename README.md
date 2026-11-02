@@ -11,9 +11,7 @@ ArticleGeolocation transforma coordenadas presentes em artigos MediaWiki em um f
 
 ## Integração com formulários
 
-O formulário é disponibilizado pelo **Page Forms do site**, não por esta extensão. Veja o exemplo integrado ao [MapaMovSaúde](https://github.com/FiocruzLivre/mapa-mov-saude). A imagem abaixo é capturada de uma instalação real desse projeto e comparada com o código a cada PR.
-
-![Exemplo do formulário de localização utilizado no MapaMovSaúde](https://raw.githubusercontent.com/FiocruzLivre/mapa-mov-saude/main/img/screenshots/formulario-geolocalizacao.png)
+O formulário é disponibilizado pelo **Page Forms do site**, não por esta extensão. O [MapaMovSaúde](https://github.com/FiocruzLivre/mapa-mov-saude) oferece localização opcional por mapa Leaflet. A extensão aceita o campo \`localizacao\` (latitude, longitude) e também os antigos campos separados para compatibilidade.
 
 ## Começar
 
