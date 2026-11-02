@@ -15,7 +15,7 @@ O formulário é disponibilizado pelo **Page Forms do site**, não por esta exte
 
 ## Começar
 
-Requer MediaWiki 1.46+, PHP 8.3+ e a extensão GeoData. Instale este repositório como `extensions/ArticleGeolocation` e adicione ao `LocalSettings.php`:
+Requer a extensão GeoData e versões de MediaWiki e PHP compatíveis com os requisitos declarados em `extension.json` e nos testes de integração do projeto. Instale este repositório como `extensions/ArticleGeolocation` e adicione ao `LocalSettings.php`:
 
 `wfLoadExtension( 'ArticleGeolocation' );`
 
