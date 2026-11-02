@@ -29,6 +29,12 @@ Quando a extensão Echo estiver instalada e ativada, a criação ou alteração 
 
 **Antes de produção:** validar visualmente o fluxo administrativo e registrar a captura no PR sem versioná-la. A permissão específica `articlegeolocation-review` evita distribuir desnecessariamente o direito amplo `editinterface`. O feed aprovado é disponibilizado em `Special:ArticleGeolocationFeed`. **O GeoData possui API própria: não registre localização confidencial esperando protegê-la apenas pela aprovação deste feed.**
 
+## Migração dos marcadores históricos
+
+A importação utiliza um inventário JSON auditado **mantido fora do repositório**. Execute inicialmente, em homologação, `php maintenance/run.php /caminho/ArticleGeolocation/maintenance/importLegacyPins.php --manifest=/caminho/seguro/classification.json`. Sem `--apply`, a operação é somente leitura e devolve JSON com checksum SHA-256, páginas elegíveis, conflitos, registros ignorados e resultados por artigo. As coordenadas históricas são normalizadas para oito casas decimais.
+
+Após revisar o relatório, conferir backup e instalar a predefinição, a aplicação explícita requer `--apply --confirm-sha256=HASH_DO_RELATORIO --editor=USUARIO`. O script recusa revisões alteradas, coordenadas já existentes e artigos não elegíveis; execuções repetidas não duplicam dados. As localizações importadas ficam **pendentes**, nunca aprovadas automaticamente, e a importação em lote não envia notificações individuais. Nenhum arquivo de inventário nem relatório contendo dados reais deve ser versionado. A produção não deve receber a migração antes da revisão editorial e do plano de rollback.
+
 ## Comunidade e suporte
 
 Problemas, melhorias e contribuições podem ser registrados em [issues](https://github.com/FiocruzLivre/mediawiki-extension-article-geolocation/issues) e enviados por pull request. Para implantação ou suporte profissional, consulte os mantenedores sobre a disponibilidade de atendimento; esse serviço é independente do uso gratuito do software livre.

@@ -17,7 +17,8 @@ final class NotificationHooks implements PageSaveCompleteHook {
     public function onPageSaveComplete(
         $wikiPage, $user, $summary, $flags, $revisionRecord, $editResult
     ): void {
-        if (!ExtensionRegistry::getInstance()->isLoaded('Echo') ||
+        if (!empty($GLOBALS['wgArticleGeolocationSuppressNotifications']) ||
+            !ExtensionRegistry::getInstance()->isLoaded('Echo') ||
             $wikiPage->getTitle()->getNamespace() !== NS_MAIN) {
             return;
         }
