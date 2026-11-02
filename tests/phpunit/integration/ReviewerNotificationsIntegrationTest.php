@@ -27,11 +27,17 @@ class ReviewerNotificationsIntegrationTest extends MediaWikiIntegrationTestCase 
         $page = $this->getNonexistingTestPage();
         $location = '{{Geolocalização do artigo|localizacao=-15.79389, -47.88278|exibir_no_mapa=sim}}';
         $this->editPage($page, $location . ' Primeira história');
+        \MediaWiki\Deferred\DeferredUpdates::doUpdates();
+        $this->runJobs();
         $this->assertSame(1, $this->eventsFor($page->getId()));
         $this->editPage($page, $location . ' História corrigida');
+        \MediaWiki\Deferred\DeferredUpdates::doUpdates();
+        $this->runJobs();
         $this->assertSame(1, $this->eventsFor($page->getId()));
         $changed = '{{Geolocalização do artigo|localizacao=-15.79388, -47.88278|exibir_no_mapa=sim}}';
         $this->editPage($page, $changed . ' História corrigida');
+        \MediaWiki\Deferred\DeferredUpdates::doUpdates();
+        $this->runJobs();
         $this->assertSame(2, $this->eventsFor($page->getId()));
     }
 }
