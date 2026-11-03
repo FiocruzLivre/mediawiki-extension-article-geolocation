@@ -36,6 +36,21 @@
     "echo-subscriptions-web-article-geolocation": true,
     "echo-subscriptions-email-article-geolocation": false
   },
+  "ResourceFileModulePaths": {
+    "localBasePath": "",
+    "remoteExtPath": "ArticleGeolocation"
+  },
+  "ResourceModules": {
+    "ext.articleGeolocation.review": {
+      "scripts": [
+        "resources/review.js"
+      ],
+      "targets": [
+        "desktop",
+        "mobile"
+      ]
+    }
+  },
   "SpecialPages": {
     "ArticleGeolocationFeed": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialGeoJson",
     "ArticleGeolocationReview": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialReview",

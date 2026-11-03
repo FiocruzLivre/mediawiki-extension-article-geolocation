@@ -36,12 +36,16 @@ final class SpecialReview extends SpecialPage {
             ->newFromTitle($registryTitle);
 
         $error = null;
+        $bulkPhase = $this->getRequest()->getVal('bulk_phase', '');
+        $isBulk = in_array($bulkPhase, ['review', 'commit'], true);
         if ($this->getRequest()->wasPosted()) {
             try {
                 if (!$this->getContext()->getCsrfTokenSet()->matchTokenField('token')) {
                     throw new RuntimeException('Sessão expirada. Recarregue a página.');
                 }
-                $this->applyDecision($source, $registryPage);
+                if (!$isBulk) {
+                    $this->applyDecision($source, $registryPage);
+                }
             } catch (RuntimeException $e) {
                 $error = $e->getMessage();
             }
@@ -58,6 +62,23 @@ final class SpecialReview extends SpecialPage {
         foreach ($source->byIds($ids) as $article) {
             if ($article->eligible()) {
                 $articles[$article->id] = $article;
+            }
+        }
+
+        if ($isBulk && $error === null) {
+            try {
+                $batch = $this->prepareBatch($source, $registryPage, $articles, $approved);
+                if ($bulkPhase === 'commit') {
+                    $this->saveBatch($source, $registryPage, $batch);
+                    $out->addHTML(Html::element('p', ['class' => 'success'],
+                        count($batch) . ' localizações aprovadas em uma única revisão.'));
+                    $approved = (new ApprovalRegistry())->parse($source->approvalsText());
+                } else {
+                    $this->renderBulkConfirmation($batch, $registryPage);
+                    return;
+                }
+            } catch (RuntimeException $e) {
+                $out->addHTML(Html::element('p', ['class' => 'error'], $e->getMessage()));
             }
         }
 
@@ -113,15 +134,61 @@ final class SpecialReview extends SpecialPage {
             'Exibindo ' . (count($selected) === 0 ? 0 : (($pageNumber - 1) * $pageSize + 1))
             . ' a ' . min($pageNumber * $pageSize, count($selected))
             . ' de ' . count($selected) . ' histórias'));
+        $pageArticles = array_slice($selected, ($pageNumber - 1) * $pageSize, $pageSize);
+        $pendingOnPage = array_values(array_filter($pageArticles, static fn (Article $article): bool =>
+            !isset($approved[$article->id]) || $article->fingerprint() === null ||
+            !hash_equals($approved[$article->id], $article->fingerprint())));
+        $registryVersion = $registryPage->getRevisionRecord()?->getId() ?? 0;
+        $out->addHTML(Html::openElement('form', [
+            'id' => 'articlegeo-bulk-form',
+            'method' => 'post',
+            'action' => self::getTitleFor('ArticleGeolocationReview')->getLocalURL(),
+        ]));
+        $out->addHTML(Html::hidden('token',
+            $this->getContext()->getCsrfTokenSet()->getToken()->toString()));
+        $out->addHTML(Html::hidden('version', (string)$registryVersion));
+        $out->addHTML(Html::hidden('bulk_phase', 'review'));
+        $out->addHTML(Html::hidden('pending_snapshot',
+            $this->pendingSnapshot($articles, $approved)));
+
+        $out->addHTML(Html::rawElement('p', [],
+            Html::rawElement('label', [],
+                Html::element('input', [
+                    'type' => 'checkbox', 'id' => 'articlegeo-select-page',
+                ]) . ' Selecionar pendentes desta página')
+            . ' · ' . Html::element('span', [
+                'id' => 'articlegeo-selected-counter',
+            ], '0 selecionadas')));
+        if (count($states['pending']) > 0) {
+            $out->addHTML(Html::rawElement('p', [],
+                Html::rawElement('label', [],
+                    Html::element('input', [
+                        'type' => 'checkbox', 'name' => 'approve_all', 'value' => '1',
+                        'id' => 'articlegeo-all-pending',
+                    ]) . ' Selecionar todas as ' . count($states['pending'])
+                    . ' pendências, inclusive de outras páginas')));
+        }
+        $out->addHTML(Html::element('button', [
+            'type' => 'submit', 'id' => 'articlegeo-review-bulk',
+        ], 'Revisar seleção para aprovação'));
         $out->addHTML(Html::openElement('ul', ['class' => 'mw-category']));
-        foreach (array_slice($selected, ($pageNumber - 1) * $pageSize, $pageSize) as $article) {
+        foreach ($pageArticles as $article) {
             $url = self::getTitleFor('ArticleGeolocationReview', (string)$article->id)->getLocalURL();
-            $isApproved = in_array($article, $states['approved'], true);
+            $fingerprint = $article->fingerprint();
+            $isApproved = isset($approved[$article->id]) && $fingerprint !== null
+                && hash_equals($approved[$article->id], $fingerprint);
+            $checkbox = $isApproved ? '' : Html::element('input', [
+                'type' => 'checkbox', 'class' => 'articlegeo-bulk-item',
+                'name' => 'selected[]', 'value' => $article->id . ':' . $fingerprint,
+                'aria-label' => 'Selecionar ' . $article->title,
+            ]);
             $out->addHTML(Html::rawElement('li', [],
-                Html::element('a', ['href' => $url], $article->title)
+                $checkbox . ' ' . Html::element('a', ['href' => $url], $article->title)
                 . ' — ' . ($isApproved ? 'Aprovada' : 'Pendente de revisão')));
         }
         $out->addHTML(Html::closeElement('ul'));
+        $out->addHTML(Html::closeElement('form'));
+        $out->addModules('ext.articleGeolocation.review');
         $pagination = [];
         foreach (['Anterior' => $pageNumber - 1, 'Próxima' => $pageNumber + 1] as $label => $target) {
             if ($target >= 1 && $target <= $pageCount && $target !== $pageNumber) {
@@ -137,6 +204,128 @@ final class SpecialReview extends SpecialPage {
         }
         if ($selected === []) {
             $out->addHTML(Html::element('p', [], 'Nenhuma história encontrada neste filtro.'));
+        }
+    }
+
+    /** @param array<int,Article> $articles @param array<int,string> $approved */
+    private function pendingSnapshot(array $articles, array $approved): string {
+        $rows = [];
+        foreach ($articles as $article) {
+            $fp = $article->fingerprint();
+            if ($fp !== null && (!isset($approved[$article->id]) ||
+                !hash_equals($approved[$article->id], $fp))) {
+                $rows[$article->id] = $fp;
+            }
+        }
+        ksort($rows, SORT_NUMERIC);
+        return hash('sha256', json_encode($rows, JSON_THROW_ON_ERROR));
+    }
+
+    /**
+     * @param array<int,Article> $articles @param array<int,string> $approved
+     * @return array<int,Point>
+     */
+    private function prepareBatch(
+        WikiArticleSource $source, $registryPage, array $articles, array $approved
+    ): array {
+        $request = $this->getRequest();
+        $version = $request->getInt('version');
+        if (($registryPage->getRevisionRecord()?->getId() ?? 0) !== $version) {
+            throw new RuntimeException('A lista de aprovações mudou. Recarregue e selecione novamente.');
+        }
+
+        $all = $request->getVal('approve_all', '') === '1';
+        $selections = $request->getArray('selected', []);
+        if (!is_array($selections)) {
+            throw new RuntimeException('Seleção inválida.');
+        }
+        if ($all && $request->getVal('pending_snapshot', '') !==
+            $this->pendingSnapshot($articles, $approved)) {
+            throw new RuntimeException('As pendências mudaram. Recarregue antes de aprovar todas.');
+        }
+
+        $expected = [];
+        if ($all) {
+            foreach ($articles as $article) {
+                $fp = $article->fingerprint();
+                if ($fp !== null && (!isset($approved[$article->id]) ||
+                    !hash_equals($approved[$article->id], $fp))) {
+                    $expected[$article->id] = $fp;
+                }
+            }
+        } else {
+            foreach ($selections as $selection) {
+                if (!is_string($selection) ||
+                    !preg_match('/^([1-9][0-9]{0,9}):([a-f0-9]{64})$/D', $selection, $match)) {
+                    throw new RuntimeException('Seleção inválida.');
+                }
+                $id = (int)$match[1];
+                if (isset($expected[$id])) {
+                    throw new RuntimeException('A seleção contém histórias repetidas.');
+                }
+                $expected[$id] = $match[2];
+            }
+        }
+        if ($expected === [] || count($expected) > 10000) {
+            throw new RuntimeException('Selecione de 1 a 10.000 histórias para aprovar.');
+        }
+        $points = [];
+        foreach ($expected as $id => $fingerprint) {
+            $article = $articles[$id] ?? null;
+            if (!$article || !$article->eligible() || $article->fingerprint() === null ||
+                !hash_equals($fingerprint, $article->fingerprint()) ||
+                (isset($approved[$id]) && hash_equals($approved[$id], $fingerprint))) {
+                throw new RuntimeException('Uma das localizações mudou ou já foi aprovada. Recarregue a lista.');
+            }
+            $points[$id] = $article->point();
+        }
+        return $points;
+    }
+
+    /** @param array<int,Point> $batch */
+    private function renderBulkConfirmation(array $batch, $registryPage): void {
+        $out = $this->getOutput();
+        $out->addHTML(Html::element('h2', [], 'Confirmar aprovação em lote'));
+        $out->addHTML(Html::element('p', [],
+            count($batch) . ' localizações serão publicadas no mapa. '
+            . 'Esta operação gera uma única revisão e pode ser revertida individualmente.'));
+        $out->addHTML(Html::openElement('form', [
+            'method' => 'post',
+            'action' => self::getTitleFor('ArticleGeolocationReview')->getLocalURL(),
+        ]));
+        $out->addHTML(Html::hidden('token',
+            $this->getContext()->getCsrfTokenSet()->getToken()->toString()));
+        $out->addHTML(Html::hidden('version',
+            (string)($registryPage->getRevisionRecord()?->getId() ?? 0)));
+        $out->addHTML(Html::hidden('bulk_phase', 'commit'));
+        foreach ($batch as $id => $point) {
+            $out->addHTML(Html::hidden('selected[]',
+                $id . ':' . Article::fingerprintFor($id, $point)));
+        }
+        $out->addHTML(Html::element('button', ['type' => 'submit'],
+            'Confirmar aprovação de ' . count($batch) . ' localizações'));
+        $out->addHTML(Html::closeElement('form'));
+        $out->addHTML(Html::rawElement('p', [],
+            Html::element('a', [
+                'href' => self::getTitleFor('ArticleGeolocationReview')->getLocalURL(),
+            ], 'Cancelar e voltar à fila')));
+    }
+
+    /** @param array<int,Point> $batch */
+    private function saveBatch(WikiArticleSource $source, $registryPage, array $batch): void {
+        $updater = $registryPage->newPageUpdater($this->getUser());
+        if ($updater->hasEditConflict($this->getRequest()->getInt('version'))) {
+            throw new RuntimeException('A lista mudou durante a revisão. Recarregue a fila.');
+        }
+        $current = $source->approvalsText();
+        $updated = (new ApprovalEditor())->approveMany($current, $batch);
+        if ($current === $updated) {
+            return;
+        }
+        $updater->setContent(SlotRecord::MAIN, new WikitextContent($updated));
+        $updater->saveRevision('Aprovação em lote de ' . count($batch) . ' localizações');
+        if (!$updater->wasSuccessful()) {
+            throw new RuntimeException('Não foi possível salvar as aprovações.');
         }
     }
 

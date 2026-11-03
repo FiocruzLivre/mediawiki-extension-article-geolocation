@@ -23,6 +23,8 @@ Um editor pode solicitar a publicação usando a predefinição `Geolocalizaçã
 
 ### Fila e avisos
 
+A fila permite aprovar várias localizações em uma única revisão do MediaWiki: marque itens individualmente, use **Shift** para selecionar um intervalo, selecione todas da página ou todas as pendentes (inclusive de outras páginas). O formulário mostra uma etapa de **confirmação com a quantidade exata** antes de qualquer gravação. A versão do registro e as coordenadas selecionadas são revalidadas no servidor, e, se houver conflito, nenhuma aprovação parcial é salva. Itens já aprovados não são regravados.
+
 A página `Especial:ArticleGeolocationReview` mostra contadores e filtros de **Pendentes**, **Aprovadas** e **Todas**, além da revisão individual com mapa e ações de aprovação e revogação. O acesso exige apenas `articlegeolocation-review`, concedido ao grupo `sysop` por padrão.
 
 Quando a extensão Echo estiver instalada e ativada, a criação ou alteração de uma localização solicitada gera um aviso interno para moderadores. Edições comuns da mesma história não geram novos avisos. Cada moderador pode ativar o **e-mail** nas preferências de notificações do MediaWiki; essa opção começa desligada para evitar mensagens excessivas. A fila funciona mesmo sem Echo. O envio real de e-mail depende de um servidor SMTP configurado no MediaWiki.
