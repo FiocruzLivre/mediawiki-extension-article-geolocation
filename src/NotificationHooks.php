@@ -12,7 +12,7 @@ use MediaWiki\Storage\Hook\PageSaveCompleteHook;
 use MediaWiki\User\User;
 use MediaWiki\Content\TextContent;
 
-/** Notify moderators only for a new or changed request, never for ordinary article edits. */
+/** Notify moderators about a new request or any revision of a home-facing story. */
 final class NotificationHooks implements PageSaveCompleteHook {
     public function onPageSaveComplete(
         $wikiPage, $user, $summary, $flags, $revisionRecord, $editResult
@@ -29,15 +29,19 @@ final class NotificationHooks implements PageSaveCompleteHook {
         $reader = new TemplateFieldsReader();
         $fields = $reader->parse($content->getText());
         $previousFields = null;
+        $previousText = null;
         $parent = $revisionRecord->getParentId();
         if ($parent) {
             $previous = MediaWikiServices::getInstance()->getRevisionStore()->getRevisionById($parent);
             $old = $previous?->getContent(SlotRecord::MAIN, RevisionRecord::FOR_PUBLIC);
             if ($old instanceof TextContent) {
-                $previousFields = $reader->parse($old->getText());
+                $previousText = $old->getText();
+                $previousFields = $reader->parse($previousText);
             }
         }
-        if (!(new NotificationPolicy())->shouldNotify($fields, $previousFields)) {
+        if (!(new NotificationPolicy())->shouldNotify(
+            $fields, $previousFields, $content->getText(), $previousText
+        )) {
             return;
         }
         try {
@@ -49,6 +53,40 @@ final class NotificationHooks implements PageSaveCompleteHook {
         } catch (\Throwable $error) {
             // A notification failure must not invalidate an article already saved.
             error_log('ArticleGeolocation: could not queue moderator notification');
+        }
+    }
+
+    /**
+     * ModerationPending is emitted before the edit is publicly saved.
+     * Do not infer a public article revision from this pending submission.
+     */
+    public function onModerationPending(array $fields, $modid): void {
+        if (!ExtensionRegistry::getInstance()->isLoaded('Echo') ||
+            (int)($fields['mod_namespace'] ?? -1) !== NS_MAIN ||
+            (string)($fields['mod_type'] ?? '') !== 'edit') {
+            return;
+        }
+        $title = \MediaWiki\Title\Title::makeTitleSafe(
+            NS_MAIN, (string)($fields['mod_title'] ?? '')
+        );
+        if ($title === null) {
+            return;
+        }
+        try {
+            $author = MediaWikiServices::getInstance()->getUserFactory()->newFromId(
+                (int)($fields['mod_user'] ?? 0)
+            );
+            if ($author === null || !$author->isRegistered()) {
+                return;
+            }
+            Event::create([
+                'type' => 'article-content-review',
+                'title' => $title,
+                'agent' => $author,
+                'extra' => ['moderation_id' => (int)$modid],
+            ]);
+        } catch (\Throwable $error) {
+            error_log('ArticleGeolocation: could not queue pending story notification');
         }
     }
 
@@ -64,6 +102,15 @@ final class NotificationHooks implements PageSaveCompleteHook {
         $wgNotifyTypeAvailabilityByCategory['article-geolocation'] = [
             'web' => true,
             'email' => true,
+        ];
+        $notifications['article-content-review'] = [
+            'category' => 'article-geolocation',
+            'group' => 'neutral',
+            'presentation-model' => EditorialNotificationPresentation::class,
+            'icon' => 'edit',
+            'immediate' => true,
+            'canNotifyAgent' => false,
+            'user-locators' => [[[self::class, 'locateModerators']]],
         ];
         $notifications['article-geolocation-review'] = [
             'category' => 'article-geolocation',

@@ -11,5 +11,8 @@
   "articlegeolocation-notification-tooltip": "Article locations requiring review",
   "articlegeolocation-notification-header": "The location for $1 requires review.",
   "articlegeolocation-notification-subject": "Article location awaiting approval",
-  "articlegeolocation-notification-link": "Open moderation queue"
+  "articlegeolocation-notification-link": "Open moderation queue",
+  "articlegeolocation-content-notification-header": "Story $1 is waiting for review before publication.",
+  "articlegeolocation-content-notification-subject": "MapaMovSaúde: story awaiting moderation",
+  "articlegeolocation-content-notification-link": "Review pending story"
 }

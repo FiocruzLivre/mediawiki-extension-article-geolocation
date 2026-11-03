@@ -69,7 +69,7 @@ final class SpecialReview extends SpecialPage {
             try {
                 $batch = $this->prepareBatch($source, $registryPage, $articles, $approved);
                 if ($bulkPhase === 'commit') {
-                    $this->saveBatch($source, $registryPage, $batch);
+                    $this->saveBatch($source, $registryPage, $batch, $articles);
                     $out->addHTML(Html::element('p', ['class' => 'success'],
                         count($batch) . ' localizações aprovadas em uma única revisão.'));
                     $approved = (new ApprovalRegistry())->parse($source->approvalsText());
@@ -98,8 +98,7 @@ final class SpecialReview extends SpecialPage {
         $states = ['pending' => [], 'approved' => []];
         foreach ($articles as $article) {
             $fingerprint = $article->fingerprint();
-            $isApproved = isset($approved[$article->id]) && $fingerprint !== null
-                && hash_equals($approved[$article->id], $fingerprint);
+            $isApproved = $article->matchesApproval($approved[$article->id] ?? null);
             $states[$isApproved ? 'approved' : 'pending'][] = $article;
         }
 
@@ -108,8 +107,8 @@ final class SpecialReview extends SpecialPage {
             $filter = 'pending';
         }
         $out->addHTML(Html::element('p', [],
-            'Confira o conteúdo e o ponto antes de decidir. Alterações de localização '
-            . 'depois da aprovação exigem uma nova revisão.'));
+            'Confira o conteúdo e o ponto antes de decidir. Qualquer alteração no artigo '
+            . 'após a aprovação exigirá nova revisão para aparecer na home.'));
         $out->addHTML(Html::rawElement('div', ['class' => 'mw-parser-output'],
             Html::element('strong', [], 'Pendentes: ' . count($states['pending']))
             . ' · ' . Html::element('strong', [], 'Aprovadas: ' . count($states['approved']))
@@ -136,8 +135,7 @@ final class SpecialReview extends SpecialPage {
             . ' de ' . count($selected) . ' histórias'));
         $pageArticles = array_slice($selected, ($pageNumber - 1) * $pageSize, $pageSize);
         $pendingOnPage = array_values(array_filter($pageArticles, static fn (Article $article): bool =>
-            !isset($approved[$article->id]) || $article->fingerprint() === null ||
-            !hash_equals($approved[$article->id], $article->fingerprint())));
+            !$article->matchesApproval($approved[$article->id] ?? null)));
         $registryVersion = $registryPage->getRevisionRecord()?->getId() ?? 0;
         $out->addHTML(Html::openElement('form', [
             'id' => 'articlegeo-bulk-form',
@@ -175,8 +173,7 @@ final class SpecialReview extends SpecialPage {
         foreach ($pageArticles as $article) {
             $url = self::getTitleFor('ArticleGeolocationReview', (string)$article->id)->getLocalURL();
             $fingerprint = $article->fingerprint();
-            $isApproved = isset($approved[$article->id]) && $fingerprint !== null
-                && hash_equals($approved[$article->id], $fingerprint);
+            $isApproved = $article->matchesApproval($approved[$article->id] ?? null);
             $checkbox = $isApproved ? '' : Html::element('input', [
                 'type' => 'checkbox', 'class' => 'articlegeo-bulk-item',
                 'name' => 'selected[]', 'value' => $article->id . ':' . $fingerprint,
@@ -212,8 +209,7 @@ final class SpecialReview extends SpecialPage {
         $rows = [];
         foreach ($articles as $article) {
             $fp = $article->fingerprint();
-            if ($fp !== null && (!isset($approved[$article->id]) ||
-                !hash_equals($approved[$article->id], $fp))) {
+            if ($fp !== null && !$article->matchesApproval($approved[$article->id] ?? null)) {
                 $rows[$article->id] = $fp;
             }
         }
@@ -248,8 +244,7 @@ final class SpecialReview extends SpecialPage {
         if ($all) {
             foreach ($articles as $article) {
                 $fp = $article->fingerprint();
-                if ($fp !== null && (!isset($approved[$article->id]) ||
-                    !hash_equals($approved[$article->id], $fp))) {
+                if ($fp !== null && !$article->matchesApproval($approved[$article->id] ?? null)) {
                     $expected[$article->id] = $fp;
                 }
             }
@@ -274,7 +269,7 @@ final class SpecialReview extends SpecialPage {
             $article = $articles[$id] ?? null;
             if (!$article || !$article->eligible() || $article->fingerprint() === null ||
                 !hash_equals($fingerprint, $article->fingerprint()) ||
-                (isset($approved[$id]) && hash_equals($approved[$id], $fingerprint))) {
+                $article->matchesApproval($approved[$id] ?? null)) {
                 throw new RuntimeException('Uma das localizações mudou ou já foi aprovada. Recarregue a lista.');
             }
             $points[$id] = $article->point();
@@ -336,8 +331,9 @@ final class SpecialReview extends SpecialPage {
             (string)($registryPage->getRevisionRecord()?->getId() ?? 0)));
         $out->addHTML(Html::hidden('bulk_phase', 'commit'));
         foreach ($batch as $id => $point) {
+            $article = $articles[$id];
             $out->addHTML(Html::hidden('selected[]',
-                $id . ':' . Article::fingerprintFor($id, $point)));
+                $id . ':' . $article->fingerprint()));
         }
         $out->addHTML(Html::element('button', ['type' => 'submit'],
             'Confirmar aprovação de ' . count($batch) . ' localizações'));
@@ -348,14 +344,20 @@ final class SpecialReview extends SpecialPage {
             ], 'Cancelar e voltar à fila')));
     }
 
-    /** @param array<int,Point> $batch */
-    private function saveBatch(WikiArticleSource $source, $registryPage, array $batch): void {
+    /** @param array<int,Point> $batch @param array<int,Article> $articles */
+    private function saveBatch(
+        WikiArticleSource $source, $registryPage, array $batch, array $articles
+    ): void {
         $updater = $registryPage->newPageUpdater($this->getUser());
         if ($updater->hasEditConflict($this->getRequest()->getInt('version'))) {
             throw new RuntimeException('A lista mudou durante a revisão. Recarregue a fila.');
         }
         $current = $source->approvalsText();
-        $updated = (new ApprovalEditor())->approveMany($current, $batch);
+        $revisions = [];
+        foreach ($batch as $id => $point) {
+            $revisions[$id] = $articles[$id]->revisionId;
+        }
+        $updated = (new ApprovalEditor())->approveMany($current, $batch, $revisions);
         if ($current === $updated) {
             return;
         }
@@ -392,7 +394,8 @@ final class SpecialReview extends SpecialPage {
                     (string)$article->id)->getLocalURL(),
             ], 'Editar localização no mapa')));
         $out->addHTML(Html::element('p', [],
-            $isApproved ? 'Localização aprovada' : 'Localização pendente de aprovação'));
+            $isApproved ? 'História e localização aprovadas para o mapa'
+                : 'História ou localização aguardando aprovação para o mapa'));
 
         [$lat, $lon] = $point->canonical();
         $geoJson = json_encode([
@@ -433,7 +436,7 @@ final class SpecialReview extends SpecialPage {
         }
         $out->addHTML(Html::closeElement('form'));
         $out->addHTML(Html::element('p', [],
-            'Após alterar o ponto na história, uma nova aprovação será necessária.'));
+            'Qualquer nova revisão do texto ou do ponto exige aprovação editorial para aparecer na home.'));
     }
 
     private function applyDecision(WikiArticleSource $source, $registryPage): void {
@@ -461,7 +464,9 @@ final class SpecialReview extends SpecialPage {
             $point = $found[0]->point();
         }
         $current = $source->approvalsText();
-        $updated = (new ApprovalEditor())->change($current, $id, $point);
+        $updated = (new ApprovalEditor())->change(
+            $current, $id, $point, $decision === 'approve' ? $found[0]->revisionId : null
+        );
         if ($current === $updated) {
             return;
         }

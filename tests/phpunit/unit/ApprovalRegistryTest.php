@@ -47,4 +47,27 @@ class ApprovalRegistryTest extends MediaWikiUnitTestCase {
         $this->expectException( DomainException::class );
         $this->parse( implode( "\n", $lines ) );
     }
+
+    /** @dataProvider revisionRegistry */
+    public function testRevisionApprovalDiffersBetweenRevisions(string $first, string $second): void {
+        $this->assertNotSame($this->parse($first), $this->parse($second));
+    }
+
+    public static function revisionRegistry(): iterable {
+        yield 'new revision' => ['5|-22|-43|111', '5|-22|-43|112'];
+        yield 'legacy vs new' => ['5|-22|-43', '5|-22|-43|111'];
+    }
+
+    /** @dataProvider malformedRevisions */
+    public function testMalformedRevisionIsRejected(string $line): void {
+        $this->expectException(DomainException::class);
+        $this->parse($line);
+    }
+
+    public static function malformedRevisions(): iterable {
+        yield 'zero' => ['5|0|0|0'];
+        yield 'negative' => ['5|0|0|-2'];
+        yield 'extra field' => ['5|0|0|2|3'];
+    }
+
 }

@@ -18,6 +18,8 @@ class ReviewerNotificationsIntegrationTest extends MediaWikiIntegrationTestCase 
         $icons = [];
         (new NotificationHooks())->onBeforeCreateEchoEvent($notifications, $categories, $icons);
         $event = $notifications['article-geolocation-review'];
+        $this->assertSame('article-geolocation',
+            $notifications['article-content-review']['category']);
         $this->assertSame('article-geolocation', $event['category']);
         $this->assertSame([[[NotificationHooks::class, 'locateModerators']]],
             $event['user-locators']);

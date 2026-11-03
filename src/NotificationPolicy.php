@@ -3,14 +3,22 @@ declare(strict_types=1);
 
 namespace MediaWiki\Extension\ArticleGeolocation;
 
-/** A moderation alert is needed only when a valid requested point first appears or changes. */
+/** Notify whenever the public map needs a fresh editorial decision. */
 final class NotificationPolicy {
-    public function shouldNotify(TemplateFields $current, ?TemplateFields $previous): bool {
-        if ($current->invalid || !$current->requested || $current->point === null) {
+    public function shouldNotify(
+        TemplateFields $current, ?TemplateFields $previous,
+        string $newText = '', ?string $oldText = null
+    ): bool {
+        $newRequested = !$current->invalid && $current->requested && $current->point !== null;
+        $wasRequested = $previous !== null && !$previous->invalid &&
+            $previous->requested && $previous->point !== null;
+        if (!$newRequested && !$wasRequested) {
             return false;
         }
-        return $previous === null || $previous->invalid || !$previous->requested ||
-            $previous->point === null ||
-            $current->point->canonical() !== $previous->point->canonical();
+        if (!$newRequested || !$wasRequested) {
+            return true; // Request created, withdrawn or made invalid.
+        }
+        return $current->point->canonical() !== $previous->point->canonical() ||
+            ($oldText !== null && $oldText !== $newText);
     }
 }

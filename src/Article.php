@@ -48,21 +48,38 @@ final readonly class Article {
         return str_replace('_', ' ', $this->title);
     }
 
-    /** Approval is bound to the precise location/intent, not arbitrary prose revisions. */
+    /** All newly granted approvals bind to the current, reviewed page revision. */
     public function fingerprint(): ?string {
         $point = $this->point();
-        if ($point === null || !$this->requested) {
+        if ($point === null || !$this->requested || $this->revisionId <= 0) {
             return null;
         }
-        return self::fingerprintFor($this->id, $point);
+        return self::fingerprintFor($this->id, $point, $this->revisionId);
     }
 
-    public static function fingerprintFor(int $id, Point $point): string {
-        return hash('sha256', json_encode([
-            'v' => 2,
+    /** Existing three-field approvals remain readable until the one-time migration. */
+    public function matchesApproval(?string $approval): bool {
+        $current = $this->fingerprint();
+        if ($current === null || $approval === null) {
+            return false;
+        }
+        return hash_equals($approval, $current) ||
+            hash_equals($approval, self::fingerprintFor($this->id, $this->point()));
+    }
+
+    public static function fingerprintFor(int $id, Point $point, ?int $revisionId = null): string {
+        if ($revisionId !== null && $revisionId <= 0) {
+            throw new \InvalidArgumentException('Revisão de aprovação inválida');
+        }
+        $payload = [
+            'v' => $revisionId === null ? 2 : 3,
             'page_id' => $id,
             'coordinates' => $point->canonical(),
             'requested' => true,
-        ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
+        ];
+        if ($revisionId !== null) {
+            $payload['revision_id'] = $revisionId;
+        }
+        return hash('sha256', json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
     }
 }

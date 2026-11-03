@@ -126,4 +126,22 @@ class ApprovedFeedTest extends MediaWikiUnitTestCase {
         yield 'mil pontos' => [ 1000 ];
         yield 'dez mil pontos' => [ 10000 ];
     }
+
+    /** @dataProvider reviewedRevisions */
+    public function testEditedStoriesDisappearUntilTheNewRevisionIsApproved(
+        int $approvedRevision, int $currentRevision, int $expected
+    ): void {
+        $this->source->articles[1] = $this->article(1, ['revisionId' => $currentRevision]);
+        $approvals = (new ApprovalRegistry())->parse(
+            "1|-3.68274|-40.3512|$approvedRevision"
+        );
+        $this->assertCount($expected, $this->features($approvals));
+    }
+
+    public static function reviewedRevisions(): iterable {
+        yield 'revision unchanged' => [50, 50, 1];
+        yield 'new text revision' => [50, 51, 0];
+        yield 'reapproved text revision' => [51, 51, 1];
+    }
+
 }

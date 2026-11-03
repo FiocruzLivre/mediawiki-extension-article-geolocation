@@ -19,7 +19,7 @@ Requer a extensão GeoData e versões de MediaWiki e PHP compatíveis com os req
 
 `wfLoadExtension( 'ArticleGeolocation' );`
 
-Um editor pode solicitar a publicação usando a predefinição `Geolocalização do artigo` da wiki; a lista de aprovações utiliza linhas `ID|latitude|longitude` na página de controle `MediaWiki:ArticleGeolocation-aprovacoes`. A página `Especial:ArticleGeolocationReview` permite que administradores com o direito específico `articlegeolocation-review` consultem as histórias geolocalizadas, abram a história, editem a localização no formulário Page Forms e aprovem ou revoguem o ponto. A extensão concede esse direito ao grupo `sysop` por padrão, sem exigir `editinterface`. A aprovação é ligada às coordenadas atuais e expira se forem alteradas. Não é necessário informar o tipo ou a precisão da localização.
+Um editor pode solicitar a publicação usando a predefinição `Geolocalização do artigo` da wiki; a lista de aprovações utiliza linhas `ID|latitude|longitude` na página de controle `MediaWiki:ArticleGeolocation-aprovacoes`. A página `Especial:ArticleGeolocationReview` permite que administradores com o direito específico `articlegeolocation-review` consultem as histórias geolocalizadas, abram a história, editem a localização no formulário Page Forms e aprovem ou revoguem o ponto. A extensão concede esse direito ao grupo `sysop` por padrão, sem exigir `editinterface`. Novas aprovações registram também a revisão do artigo. Qualquer nova edição do conteúdo ou da localização exige outra aprovação para aparecer na home. Não é necessário informar o tipo ou a precisão da localização.
 
 ### Fila e avisos
 
@@ -27,7 +27,7 @@ A fila permite aprovar várias localizações em uma única revisão do MediaWik
 
 A página `Especial:ArticleGeolocationReview` mostra contadores e filtros de **Pendentes**, **Aprovadas** e **Todas**, além da revisão individual com mapa e ações de aprovação e revogação. O acesso exige apenas `articlegeolocation-review`, concedido ao grupo `sysop` por padrão.
 
-Quando a extensão Echo estiver instalada e ativada, a criação ou alteração de uma localização solicitada gera um aviso interno para moderadores. Edições comuns da mesma história não geram novos avisos. Cada moderador pode ativar o **e-mail** nas preferências de notificações do MediaWiki; essa opção começa desligada para evitar mensagens excessivas. A fila funciona mesmo sem Echo. O envio real de e-mail depende de um servidor SMTP configurado no MediaWiki.
+Quando a extensão Echo estiver instalada e ativada, a criação ou alteração de uma localização solicitada gera um aviso interno para moderadores. Qualquer alteração de conteúdo de uma história com ponto solicitado gera novo aviso. Se Moderation estiver ativa, novas histórias e edições entram primeiro na fila Especial:Moderation; depois, o pin é revisado independentemente. Cada moderador pode ativar o **e-mail** nas preferências de notificações do MediaWiki; essa opção começa desligada para evitar mensagens excessivas. A fila funciona mesmo sem Echo. O envio real de e-mail depende de um servidor SMTP configurado no MediaWiki.
 
 **Antes de produção:** validar visualmente o fluxo administrativo e registrar a captura no PR sem versioná-la. A permissão específica `articlegeolocation-review` evita distribuir desnecessariamente o direito amplo `editinterface`. O feed aprovado é disponibilizado em `Special:ArticleGeolocationFeed`. **O GeoData possui API própria: não registre localização confidencial esperando protegê-la apenas pela aprovação deste feed.**
 
@@ -58,3 +58,12 @@ Após revisar o relatório, conferir backup e instalar a predefinição, a aplic
 Problemas, melhorias e contribuições podem ser registrados em [issues](https://github.com/FiocruzLivre/mediawiki-extension-article-geolocation/issues) e enviados por pull request. Para implantação ou suporte profissional, consulte os mantenedores sobre a disponibilidade de atendimento; esse serviço é independente do uso gratuito do software livre.
 
 Diretrizes para contribuição e testes estão em [AGENTS.md](AGENTS.md).
+
+## Atualização das aprovações existentes
+
+As aprovações antigas possuem três campos, e as novas incluem a revisão do artigo.
+Antes de liberar edições públicas, execute o script maintenance/bindApprovalRevisions.php
+sem opções para obter o checksum SHA-256 e verificar inconsistências. Após
+revisão e backup, use --apply --confirm-sha256=HASH --editor=USUARIO.
+A conversão não altera artigos ou coordenadas e pode ser revertida pelo histórico
+da página MediaWiki:ArticleGeolocation-aprovacoes.
