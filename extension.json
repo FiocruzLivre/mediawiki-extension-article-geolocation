@@ -20,12 +20,16 @@
     "MediaWiki\\Extension\\ArticleGeolocation\\": "src/"
   },
   "Hooks": {
+    "ParserFirstCallInit": "mapEmbed",
     "PageSaveComplete": "notification",
     "BeforeCreateEchoEvent": "notification"
   },
   "HookHandlers": {
     "notification": {
       "class": "MediaWiki\\Extension\\ArticleGeolocation\\NotificationHooks"
+    },
+    "mapEmbed": {
+      "class": "MediaWiki\\Extension\\ArticleGeolocation\\MapEmbedHooks"
     }
   },
   "DefaultUserOptions": {
@@ -34,7 +38,8 @@
   },
   "SpecialPages": {
     "ArticleGeolocationFeed": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialGeoJson",
-    "ArticleGeolocationReview": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialReview"
+    "ArticleGeolocationReview": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialReview",
+    "ArticleGeolocationPreview": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialMapPreview"
   },
   "MessagesDirs": {
     "ArticleGeolocation": [

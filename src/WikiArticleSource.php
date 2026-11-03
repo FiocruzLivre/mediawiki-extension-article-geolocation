@@ -12,6 +12,34 @@ use MediaWiki\Title\Title;
 use RuntimeException;
 
 final class WikiArticleSource implements ArticleSource {
+    /**
+     * Enumerate geolocated article IDs without a hidden fixed cap.
+     * Keyset paging keeps results stable as new pages are added.
+     *
+     * @return int[]
+     */
+    public function candidateIds(): array {
+        $db = MediaWikiServices::getInstance()->getConnectionProvider()
+            ->getReplicaDatabase();
+        $ids = [];
+        $lastId = 0;
+        do {
+            $rows = $db->newSelectQueryBuilder()
+                ->select('gt_page_id')->distinct()->from('geo_tags')
+                ->where([
+                    'gt_primary' => 1, 'gt_globe' => 'earth',
+                    $db->expr('gt_page_id', '>', $lastId),
+                ])
+                ->orderBy('gt_page_id')
+                ->limit(250)->caller(__METHOD__)->fetchFieldValues();
+            foreach ($rows as $id) {
+                $lastId = (int)$id;
+                $ids[] = $lastId;
+            }
+        } while (count($rows) === 250);
+        return $ids;
+    }
+
     /** @return iterable<Article> */
     public function byIds(array $pageIds): iterable {
         $services = MediaWikiServices::getInstance();

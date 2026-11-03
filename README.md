@@ -29,6 +29,14 @@ Quando a extensão Echo estiver instalada e ativada, a criação ou alteração 
 
 **Antes de produção:** validar visualmente o fluxo administrativo e registrar a captura no PR sem versioná-la. A permissão específica `articlegeolocation-review` evita distribuir desnecessariamente o direito amplo `editinterface`. O feed aprovado é disponibilizado em `Special:ArticleGeolocationFeed`. **O GeoData possui API própria: não registre localização confidencial esperando protegê-la apenas pela aprovação deste feed.**
 
+### Prévia e mapa público
+
+Use `Especial:ArticleGeolocationPreview` para conferir **todos** os pontos solicitados, incluindo os ainda pendentes. Essa página exige a permissão `articlegeolocation-review` e nunca publica os pontos pendentes no feed aberto. A fila em `Especial:ArticleGeolocationReview` é paginada (50 histórias por página), sem limite fixo de 500 candidatos.
+
+Para exibir o mapa de **somente pontos aprovados**, adicione `<articlegeolocationmap />` ao wikitexto de qualquer página. O componente utiliza Kartographer e não permite cache do resultado, para que revogações e mudanças de localização sejam refletidas na próxima visualização. Sem aprovações, exibe uma mensagem em vez de um mapa vazio.
+
+A substituição da home requer apenas trocar `{{Predefinição:Mapa_Brasil}}` pelo componente `<articlegeolocationmap />` no mesmo contêiner `#mapa-interativo`. Antes dessa alteração, valide a renderização em uma página temporária, salve a revisão anterior e compare pontos, links e comportamento responsivo. Após validar a nova home e o procedimento de reversão, a página temporária pode ser excluída. Não remova a predefinição legada durante a transição.
+
 ## Migração dos marcadores históricos
 
 A importação utiliza um inventário JSON auditado **mantido fora do repositório**. Execute inicialmente, em homologação, `php maintenance/run.php /caminho/ArticleGeolocation/maintenance/importLegacyPins.php --manifest=/caminho/seguro/classification.json`. Sem `--apply`, a operação é somente leitura e devolve JSON com checksum SHA-256, páginas elegíveis, conflitos, registros ignorados e resultados por artigo. As coordenadas históricas são normalizadas para oito casas decimais.

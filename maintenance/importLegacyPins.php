@@ -85,8 +85,8 @@ class ImportLegacyPins extends Maintenance {
             return 'page_missing_or_not_article';
         }
         $revision = $page->getRevisionRecord();
-        if ($revision === null || $revision->getId() !== $row['revision_id']) {
-            return 'article_changed_since_inventory';
+        if ($revision === null) {
+            return 'revision_missing';
         }
         $content = $revision->getContent(SlotRecord::MAIN, RevisionRecord::FOR_PUBLIC);
         if (!$content instanceof TextContent) {
@@ -96,6 +96,9 @@ class ImportLegacyPins extends Maintenance {
         if (preg_match('/\{\{\s*Geolocaliza[cç][aã]o[ _]+do[ _]+artigo\b/iu', $text)) {
             return 'existing_location_template';
         }
+        if ($revision->getId() !== $row['revision_id']) {
+            return 'article_changed_since_inventory';
+        }
         if (preg_match('/\{\{\s*#coordinates\s*:/iu', $text) ||
             \GeoData\GeoData::getAllCoordinates($row['page_id'], ['gt_primary' => 1], DB_PRIMARY) !== []) {
             return 'existing_geo_tag';
@@ -103,7 +106,13 @@ class ImportLegacyPins extends Maintenance {
         if (!$apply) {
             return 'ready_for_review';
         }
-        if (!$services->getPermissionManager()->userCan('edit', $editor, $page->getTitle())) {
+        // The trusted maintenance process has no interactive CAPTCHA form.
+        // Preserve all normal edit restrictions except ConfirmEdit's web challenge.
+        if ($services->getPermissionManager()->getPermissionErrors(
+            'edit', $editor, $page->getTitle(),
+            \MediaWiki\Permissions\PermissionManager::RIGOR_SECURE,
+            ['confirmedittext']
+        ) !== []) {
             return 'editor_not_permitted';
         }
         $updater = $page->newPageUpdater($editor);

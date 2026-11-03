@@ -6,6 +6,7 @@
   },
   "articlegeolocationfeed": "Approved geographic map",
   "articlegeolocationreview": "Location review",
+  "articlegeolocationpreview": "Editorial map preview",
   "articlegeolocation-notification-category": "Location moderation",
   "articlegeolocation-notification-tooltip": "Article locations requiring review",
   "articlegeolocation-notification-header": "The location for $1 requires review.",

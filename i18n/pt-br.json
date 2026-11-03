@@ -6,6 +6,7 @@
   },
   "articlegeolocationfeed": "Mapa geográfico aprovado",
   "articlegeolocationreview": "Moderação das localizações",
+  "articlegeolocationpreview": "Prévia editorial do mapa",
   "articlegeolocation-notification-category": "Moderação de localizações",
   "articlegeolocation-notification-tooltip": "Solicitações de localização para aprovação",
   "articlegeolocation-notification-header": "A localização da história $1 precisa de revisão.",

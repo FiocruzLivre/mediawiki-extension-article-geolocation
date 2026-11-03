@@ -9,7 +9,7 @@ use Throwable;
 /** Endpoint GeoJSON público, sem cache de resultado e sem aprovações inferidas de artigos. */
 final class SpecialGeoJson extends SpecialPage {
     public function __construct() {
-        parent::__construct('ArticleGeolocationFeed', '', false);
+        parent::__construct('ArticleGeolocationFeed');
     }
 
     public function execute($subPage): void {

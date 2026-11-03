@@ -53,7 +53,7 @@ final class SpecialReview extends SpecialPage {
 
         $approvalsText = $source->approvalsText();
         $approved = (new ApprovalRegistry())->parse($approvalsText);
-        $ids = $this->candidateIds();
+        $ids = $source->candidateIds();
         $articles = [];
         foreach ($source->byIds($ids) as $article) {
             if ($article->eligible()) {
@@ -105,8 +105,16 @@ final class SpecialReview extends SpecialPage {
         $selected = $filter === 'all' ? array_merge($states['pending'], $states['approved']) : $states[$filter];
         usort($selected, static fn (Article $a, Article $b): int =>
             strcasecmp($a->title, $b->title));
+        $pageSize = 50;
+        $pageNumber = max(1, $this->getRequest()->getInt('page', 1));
+        $pageCount = max(1, (int)ceil(count($selected) / $pageSize));
+        $pageNumber = min($pageNumber, $pageCount);
+        $out->addHTML(Html::element('p', [],
+            'Exibindo ' . (count($selected) === 0 ? 0 : (($pageNumber - 1) * $pageSize + 1))
+            . ' a ' . min($pageNumber * $pageSize, count($selected))
+            . ' de ' . count($selected) . ' histórias'));
         $out->addHTML(Html::openElement('ul', ['class' => 'mw-category']));
-        foreach ($selected as $article) {
+        foreach (array_slice($selected, ($pageNumber - 1) * $pageSize, $pageSize) as $article) {
             $url = self::getTitleFor('ArticleGeolocationReview', (string)$article->id)->getLocalURL();
             $isApproved = in_array($article, $states['approved'], true);
             $out->addHTML(Html::rawElement('li', [],
@@ -114,29 +122,22 @@ final class SpecialReview extends SpecialPage {
                 . ' — ' . ($isApproved ? 'Aprovada' : 'Pendente de revisão')));
         }
         $out->addHTML(Html::closeElement('ul'));
+        $pagination = [];
+        foreach (['Anterior' => $pageNumber - 1, 'Próxima' => $pageNumber + 1] as $label => $target) {
+            if ($target >= 1 && $target <= $pageCount && $target !== $pageNumber) {
+                $pagination[] = Html::element('a', [
+                    'href' => self::getTitleFor('ArticleGeolocationReview')
+                        ->getLocalURL(['status' => $filter, 'page' => $target]),
+                ], $label);
+            }
+        }
+        if ($pagination !== []) {
+            $out->addHTML(Html::rawElement('nav', ['aria-label' => 'Páginas da moderação'],
+                implode(' · ', $pagination)));
+        }
         if ($selected === []) {
             $out->addHTML(Html::element('p', [], 'Nenhuma história encontrada neste filtro.'));
         }
-    }
-
-    /** @return int[] IDs distintos, sem expor artigos sem localização solicitada. */
-    private function candidateIds(): array {
-        $db = MediaWikiServices::getInstance()->getConnectionProvider()
-            ->getReplicaDatabase();
-        $result = $db->newSelectQueryBuilder()
-            ->select('gt_page_id')
-            ->distinct()
-            ->from('geo_tags')
-            ->where(['gt_primary' => 1, 'gt_globe' => 'earth'])
-            ->orderBy('gt_page_id')
-            ->limit(500)
-            ->caller(__METHOD__)
-            ->fetchResultSet();
-        $ids = [];
-        foreach ($result as $row) {
-            $ids[] = (int)$row->gt_page_id;
-        }
-        return $ids;
     }
 
     /** @param array<int,string> $approved */
