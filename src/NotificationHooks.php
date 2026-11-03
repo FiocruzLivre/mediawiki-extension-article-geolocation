@@ -62,12 +62,12 @@ final class NotificationHooks implements PageSaveCompleteHook {
      */
     public function onModerationPending(array $fields, $modid): void {
         if (!ExtensionRegistry::getInstance()->isLoaded('Echo') ||
-            (int)($fields['mod_namespace'] ?? -1) !== NS_MAIN ||
-            (string)($fields['mod_type'] ?? '') !== 'edit') {
+            !in_array((int)($fields['mod_namespace'] ?? -1), [NS_MAIN, NS_FILE], true) ||
+            !in_array((string)($fields['mod_type'] ?? ''), ['edit', 'upload'], true)) {
             return;
         }
         $title = \MediaWiki\Title\Title::makeTitleSafe(
-            NS_MAIN, (string)($fields['mod_title'] ?? '')
+            (int)$fields['mod_namespace'], (string)($fields['mod_title'] ?? '')
         );
         if ($title === null) {
             return;
