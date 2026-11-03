@@ -5,6 +5,7 @@ use MediaWiki\Extension\ArticleGeolocation\Article;
 use MediaWiki\Extension\ArticleGeolocation\LegacyApprovalMigration;
 use MediaWiki\Extension\ArticleGeolocation\Point;
 
+/** @covers \MediaWiki\Extension\ArticleGeolocation\LegacyApprovalMigration */
 class LegacyApprovalMigrationTest extends MediaWikiUnitTestCase {
     private function article(int $revision, ?Point $point = null): Article {
         $point ??= Point::fromNumbers(-22, -43);
