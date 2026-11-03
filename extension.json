@@ -75,7 +75,6 @@
   "SpecialPages": {
     "ArticleGeolocationFeed": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialGeoJson",
     "ArticleGeolocationReview": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialReview",
-    "ArticleGeolocationPreview": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialMapPreview",
     "ArticleGeolocationEdit": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialLocationEdit"
   },
   "MessagesDirs": {

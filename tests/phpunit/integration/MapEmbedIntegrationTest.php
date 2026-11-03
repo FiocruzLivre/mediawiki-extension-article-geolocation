@@ -42,10 +42,11 @@ class MapEmbedIntegrationTest extends MediaWikiIntegrationTestCase {
         $this->assertSame(0, $second->getCacheExpiry());
     }
 
-    public function testEditorialPreviewIsRestrictedToReviewers(): void {
-        $special = $this->getServiceContainer()->getSpecialPageFactory()
-            ->getPage('ArticleGeolocationPreview');
-        $this->assertSame('articlegeolocation-review', $special->getRestriction());
+    public function testTemporaryEditorialPreviewIsNoLongerRegistered(): void {
+        $this->assertNull(
+            $this->getServiceContainer()->getSpecialPageFactory()
+                ->getPage('ArticleGeolocationPreview')
+        );
     }
 
     private function parseMap() {
