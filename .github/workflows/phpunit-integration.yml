@@ -45,6 +45,9 @@ jobs:
             https://gerrit.wikimedia.org/r/mediawiki/extensions/Echo.git \
             "$RUNNER_TEMP/mediawiki/extensions/Echo"
           git clone --depth 1 --branch REL1_46 \
+            https://gerrit.wikimedia.org/r/mediawiki/extensions/JsonConfig.git \
+            "$RUNNER_TEMP/mediawiki/extensions/JsonConfig"
+          git clone --depth 1 --branch REL1_46 \
             https://gerrit.wikimedia.org/r/mediawiki/extensions/Kartographer.git \
             "$RUNNER_TEMP/mediawiki/extensions/Kartographer"
           ln -s "$GITHUB_WORKSPACE" "$RUNNER_TEMP/mediawiki/extensions/ArticleGeolocation"
@@ -59,7 +62,7 @@ jobs:
             --installdbuser mapageo --installdbpass senha_de_teste \
             --server http://localhost --scriptpath / \
             --pass senha_administrador_teste --lang pt-br \
-            --extensions GeoData,Echo,Kartographer,ArticleGeolocation \
+            --extensions GeoData,Echo,JsonConfig,Kartographer,ArticleGeolocation \
             "Mapa de teste" editor_teste
       - name: Exercitar regras de publicação e revogação
         working-directory: ${{ runner.temp }}/mediawiki
