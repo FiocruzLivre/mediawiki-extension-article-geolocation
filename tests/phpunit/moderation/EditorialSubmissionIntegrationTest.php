@@ -51,6 +51,12 @@ class EditorialSubmissionIntegrationTest extends MediaWikiIntegrationTestCase {
             ])->caller(__METHOD__)->fetchFieldValues();
         $this->assertCount(1, $rows);
 
+        $events = $this->getDb()->newSelectQueryBuilder()
+            ->select('event_id')->from('echo_event')
+            ->where(['event_type' => 'article-content-review'])
+            ->caller(__METHOD__)->fetchFieldValues();
+        $this->assertCount(1, $events, 'The editorial request must notify the reviewers.');
+
         $this->assertSame([], json_decode(
             (new ApprovedFeed(new WikiArticleSource()))->encode([]),
             true, 512, JSON_THROW_ON_ERROR
