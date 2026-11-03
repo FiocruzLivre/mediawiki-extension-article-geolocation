@@ -1,26 +1,17 @@
 <?php
 declare(strict_types=1);
 
-use MediaWiki\Extension\ArticleGeolocation\SpecialReview;
+use MediaWiki\Extension\ArticleGeolocation\SpecialLocationEdit;
 
 /**
  * @group Database
- * @covers \MediaWiki\Extension\ArticleGeolocation\SpecialReview
+ * @covers \MediaWiki\Extension\ArticleGeolocation\SpecialLocationEdit
  */
 class ReviewFormAvailabilityIntegrationTest extends MediaWikiIntegrationTestCase {
-    public function testInactiveGeolocationFormCannotBeOfferedToModerators(): void {
-        $original = $GLOBALS['wgMapamovGeolocationEnabled'] ?? null;
-        $GLOBALS['wgMapamovGeolocationEnabled'] = false;
-        try {
-            $review = new SpecialReview();
-            $method = new ReflectionMethod($review, 'hasAvailableGeolocationForm');
-            $this->assertFalse($method->invoke($review));
-        } finally {
-            if ($original === null) {
-                unset($GLOBALS['wgMapamovGeolocationEnabled']);
-            } else {
-                $GLOBALS['wgMapamovGeolocationEnabled'] = $original;
-            }
-        }
+    public function testLocationEditorUsesReviewPermissionRatherThanUnavailablePageForm(): void {
+        $editor = new SpecialLocationEdit();
+        $this->assertSame('articlegeolocation-review', $editor->getRestriction());
+        $this->assertNotNull($this->getServiceContainer()->getSpecialPageFactory()
+            ->getPage('ArticleGeolocationEdit'));
     }
 }
