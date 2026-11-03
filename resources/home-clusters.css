@@ -1,0 +1,30 @@
+#mapa-interativo .articlegeo-map-help {
+    margin: 0.75rem 1rem;
+    color: #32465a;
+}
+
+#mapa-interativo .articlegeo-map-list {
+    margin: 0.75rem 1rem 1rem;
+}
+
+#mapa-interativo .articlegeo-map-list summary {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+#mapa-interativo .articlegeo-map-list ul {
+    columns: 2;
+    margin: 0.75rem 0;
+    padding-left: 1.5rem;
+}
+
+#mapa-interativo .articlegeo-map-list li {
+    break-inside: avoid;
+    margin-bottom: 0.3rem;
+}
+
+@media (max-width: 650px) {
+    #mapa-interativo .articlegeo-map-list ul {
+        columns: 1;
+    }
+}

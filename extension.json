@@ -51,6 +51,15 @@
         "resources/map.css"
       ]
     },
+    "ext.articleGeolocation.clusters": {
+      "scripts": ["resources/home-clusters.js"],
+      "styles": ["resources/home-clusters.css"],
+      "dependencies": [
+        "ext.kartographer.frame",
+        "ext.kartographer.lib.leaflet.markercluster"
+      ],
+      "targets": ["desktop", "mobile"]
+    },
     "ext.articleGeolocation.visualEditorMap": {
       "scripts": ["resources/visualeditor-map.js"],
       "styles": ["resources/visualeditor-map.css"],
