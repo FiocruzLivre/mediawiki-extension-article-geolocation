@@ -74,7 +74,7 @@ final class SpecialReview extends SpecialPage {
                         count($batch) . ' localizações aprovadas em uma única revisão.'));
                     $approved = (new ApprovalRegistry())->parse($source->approvalsText());
                 } else {
-                    $this->renderBulkConfirmation($batch, $registryPage);
+                    $this->renderBulkConfirmation($batch, $articles, $registryPage);
                     return;
                 }
             } catch (RuntimeException $e) {
@@ -282,13 +282,50 @@ final class SpecialReview extends SpecialPage {
         return $points;
     }
 
-    /** @param array<int,Point> $batch */
-    private function renderBulkConfirmation(array $batch, $registryPage): void {
+    /** @param array<int,Point> $batch @param array<int,Article> $articles */
+    private function renderBulkConfirmation(array $batch, array $articles, $registryPage): void {
         $out = $this->getOutput();
         $out->addHTML(Html::element('h2', [], 'Confirmar aprovação em lote'));
         $out->addHTML(Html::element('p', [],
             count($batch) . ' localizações serão publicadas no mapa. '
-            . 'Esta operação gera uma única revisão e pode ser revertida individualmente.'));
+            . 'Confira os artigos e as coordenadas abaixo antes de confirmar. '
+            . 'A operação gera uma única revisão e pode ser revertida individualmente.'));
+
+        $entries = [];
+        foreach ($batch as $id => $point) {
+            $article = $articles[$id];
+            $title = Title::newFromID($id);
+            if ($title === null) {
+                throw new RuntimeException('Uma história selecionada não existe mais. Recarregue a fila.');
+            }
+            $entries[] = [$article->safeTitle(), $id, $point, $title];
+        }
+        usort($entries, static fn (array $a, array $b): int =>
+            strcasecmp($a[0], $b[0]));
+
+        $rows = '';
+        foreach ($entries as [$name, $id, $point, $title]) {
+            [$lat, $lon] = $point->canonical();
+            $reviewUrl = self::getTitleFor('ArticleGeolocationReview', (string)$id)->getLocalURL();
+            $rows .= Html::rawElement('tr', [],
+                Html::rawElement('td', [],
+                    Html::element('a', ['href' => $title->getLocalURL(), 'target' => '_blank',
+                        'rel' => 'noopener'], $name))
+                . Html::rawElement('td', [],
+                    Html::element('a', ['href' => $reviewUrl, 'target' => '_blank',
+                        'rel' => 'noopener'], 'Conferir ponto'))
+                . Html::element('td', [], $lat . ', ' . $lon));
+        }
+        $out->addHTML(Html::rawElement('div', [
+            'class' => 'mw-parser-output',
+            'style' => 'overflow-x:auto',
+        ], Html::rawElement('table', ['class' => 'wikitable', 'id' => 'articlegeo-bulk-review-table'],
+            Html::rawElement('thead', [],
+                Html::rawElement('tr', [],
+                    Html::element('th', [], 'História')
+                    . Html::element('th', [], 'Revisão do ponto')
+                    . Html::element('th', [], 'Coordenadas (latitude, longitude)')))
+            . Html::rawElement('tbody', [], $rows))));
         $out->addHTML(Html::openElement('form', [
             'method' => 'post',
             'action' => self::getTitleFor('ArticleGeolocationReview')->getLocalURL(),
