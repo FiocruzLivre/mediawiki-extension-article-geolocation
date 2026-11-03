@@ -32,7 +32,7 @@ class MapEmbedIntegrationTest extends MediaWikiIntegrationTestCase {
         $this->assertStringContainsString('mw-kartographer-map', $first->getContentHolderText());
         $this->assertSame(0, $first->getCacheExpiry());
 
-        $this->editPage($registry, 'Sem pontos aprovados');
+        $this->editPage($registry, '');
         $second = $this->parseMap();
         $this->assertStringContainsString('Não há localizações aprovadas', $second->getContentHolderText());
         $this->assertSame(0, $second->getCacheExpiry());
