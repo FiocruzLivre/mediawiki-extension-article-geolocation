@@ -23,5 +23,6 @@ jobs:
         run: |
           composer validate --no-check-publish
           php -r 'json_decode(file_get_contents("extension.json"), true, 512, JSON_THROW_ON_ERROR);'
+          node --check resources/visualeditor-map.js
           find src tests -type f -name '*.php' -exec php -l {} \;
           git diff --check
