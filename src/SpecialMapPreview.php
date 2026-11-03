@@ -25,6 +25,7 @@ final class SpecialMapPreview extends SpecialPage {
         $out = $this->getOutput();
         $out->setPageTitle('Prévia editorial do mapa');
         $out->enableOOUI();
+        $out->addModuleStyles('ext.articleGeolocation.map');
 
         $source = new WikiArticleSource();
         $approved = (new ApprovalRegistry())->parse($source->approvalsText());
