@@ -7,6 +7,7 @@ use MediaWiki\Content\TextContent;
 use MediaWiki\Content\WikitextContent;
 use MediaWiki\Html\Html;
 use MediaWiki\MediaWikiServices;
+use MediaWiki\Exception\PermissionsError;
 use MediaWiki\Revision\RevisionRecord;
 use MediaWiki\Revision\SlotRecord;
 use MediaWiki\SpecialPage\SpecialPage;
@@ -20,7 +21,19 @@ final class SpecialLocationEdit extends SpecialPage {
     }
 
     public function getRestriction(): string {
-        return 'articlegeolocation-review';
+        // A reviewer or a registered user allowed to edit this particular story may use it.
+        // Permissions are checked against the actual page ID below.
+        return '';
+    }
+
+    /**
+     * Normal wiki editors can maintain their story location. Moderators retain
+     * access while a site-wide editing suspension is in force.
+     */
+    public static function canEditStoryLocation(\MediaWiki\User\User $user, Title $title): bool {
+        return $user->isAllowed('articlegeolocation-review') ||
+            ($user->isRegistered() && MediaWikiServices::getInstance()
+                ->getPermissionManager()->userCan('edit', $user, $title));
     }
 
     public function execute($subPage): void {
@@ -51,6 +64,10 @@ final class SpecialLocationEdit extends SpecialPage {
         if ($title === null || $title->getNamespace() !== NS_MAIN) {
             return;
         }
+        $isModerator = $this->getUser()->isAllowed('articlegeolocation-review');
+        if (!self::canEditStoryLocation($this->getUser(), $title)) {
+            throw new PermissionsError('edit');
+        }
         $error = null;
         if ($this->getRequest()->wasPosted()) {
             try {
@@ -58,8 +75,10 @@ final class SpecialLocationEdit extends SpecialPage {
                     throw new RuntimeException('A sessão expirou. Recarregue a página.');
                 }
                 $this->saveLocation($id, $article);
-                $out->redirect(self::getTitleFor('ArticleGeolocationReview', (string)$id)
-                    ->getFullURL(['location_updated' => 1]));
+                $destination = $isModerator
+                    ? self::getTitleFor('ArticleGeolocationReview', (string)$id)
+                    : self::getTitleFor('ArticleGeolocationEdit', (string)$id);
+                $out->redirect($destination->getFullURL(['location_updated' => 1]));
                 return;
             } catch (RuntimeException $exception) {
                 $error = $exception->getMessage();
@@ -70,6 +89,12 @@ final class SpecialLocationEdit extends SpecialPage {
         $out->addModules('ext.articleGeolocation.locationEditor');
         $out->addModuleStyles('ext.articleGeolocation.locationEditor');
         $out->addHTML(Html::element('h2', [], $article->title));
+        if ($this->getRequest()->getVal('location_updated') === '1') {
+            $out->addHTML(Html::element('p', ['class' => 'success'],
+                'Localização salva. O novo ponto precisa de aprovação editorial para aparecer no mapa público.'));
+            $out->addHTML(Html::rawElement('p', [],
+                Html::element('a', ['href' => $title->getLocalURL()], 'Voltar à história')));
+        }
         $out->addHTML(Html::element('p', [],
             'Clique no mapa ou arraste o marcador para reposicionar o ponto. '
             . 'Você também pode pesquisar um bairro, município ou endereço público. '
@@ -120,7 +145,9 @@ final class SpecialLocationEdit extends SpecialPage {
                     'type' => 'submit', 'class' => 'mw-ui-button mw-ui-progressive',
                 ], 'Salvar nova localização')
                 . ' ' . Html::element('a', [
-                    'href' => self::getTitleFor('ArticleGeolocationReview', (string)$id)->getLocalURL(),
+                    'href' => $isModerator
+                        ? self::getTitleFor('ArticleGeolocationReview', (string)$id)->getLocalURL()
+                        : $title->getLocalURL(),
                 ], 'Cancelar'))));
         $out->addHTML(Html::element('p', [],
             'Pesquisa de locais: dados do OpenStreetMap/Nominatim. '

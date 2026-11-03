@@ -10,8 +10,10 @@ use MediaWiki\SpecialPage\SpecialPage;
 final class LocationNavigationHooks implements SkinTemplateNavigation__UniversalHook {
     public function onSkinTemplateNavigation__Universal($skinTemplate, &$links): void {
         $title = $skinTemplate->getTitle();
-        if ($title->getNamespace() !== NS_MAIN || !$title->exists() ||
-            !$skinTemplate->getUser()->isAllowed('articlegeolocation-review')) {
+        if ($title->getNamespace() !== NS_MAIN || !$title->exists()) {
+            return;
+        }
+        if (!SpecialLocationEdit::canEditStoryLocation($skinTemplate->getUser(), $title)) {
             return;
         }
         $id = $title->getArticleID();
