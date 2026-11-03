@@ -31,7 +31,10 @@ final class MapEmbedHooks {
             if ($features === []) {
                 return '<p>Não há localizações aprovadas para exibir no mapa.</p>';
             }
-            return $parser->recursiveTagParse(MapFrameMarkup::fromGeoJson($geoJson));
+            $markup = '<mapframe zoom="5" longitude="-54" latitude="-16"'
+                . ' width="1140" height="1000" align="center">'
+                . $geoJson . '</mapframe>';
+            return $parser->recursiveTagParse($markup);
         } catch (Throwable $error) {
             error_log('ArticleGeolocation: moderated map unavailable (' . get_class($error) . ')');
             return '<p>O mapa de localizações aprovadas está indisponível.</p>';

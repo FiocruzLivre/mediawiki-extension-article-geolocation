@@ -41,13 +41,11 @@ O módulo é carregado apenas em artigos geolocalizados para os quais a pessoa a
 
 Quem possui a permissão `articlegeolocation-review` **ou** é uma pessoa autenticada com permissão normal de editar aquele artigo pode abrir **Editar localização** na aba da história. Na revisão individual, a ação continua disponível aos moderadores. `Especial:ArticleGeolocationEdit/<ID>` oferece mapa Leaflet clicável, marcador arrastável e pesquisa explícita por local (OpenStreetMap/Nominatim), sem modificar o VisualEditor usado para escrever histórias. A edição altera exclusivamente as coordenadas da predefinição existente, preservando o texto e demais parâmetros; revisão concorrente impede a gravação. Uma localização modificada perde a aprovação editorial anterior até ser novamente conferida. A tela exige Page Forms para disponibilizar os recursos Leaflet, mas **não requer VEForAll nem ativa o formulário público de criação de histórias**. Se a edição geral da wiki estiver suspensa, apenas os moderadores com direito específico poderão usar a ação. Quando a edição normal for liberada, editores autenticados com direito de editar o artigo também poderão usar o mapa. Visitantes anônimos e contas sem esse direito não recebem a ação.
 
-### Prévia e mapa público
+### Mapa público
 
-Use `Especial:ArticleGeolocationPreview` para conferir **todos** os pontos solicitados, incluindo os ainda pendentes. Essa página exige a permissão `articlegeolocation-review` e nunca publica os pontos pendentes no feed aberto. A fila em `Especial:ArticleGeolocationReview` é paginada (50 histórias por página), sem limite fixo de 500 candidatos.
+Para exibir somente pontos aprovados, adicione `<articlegeolocationmap />` ao wikitexto de uma página. O componente utiliza Kartographer e não permite cache do resultado, para que revogações e mudanças de localização sejam refletidas na próxima visualização. Sem aprovações, exibe uma mensagem em vez de um mapa vazio.
 
-Para exibir o mapa de **somente pontos aprovados**, adicione `<articlegeolocationmap />` ao wikitexto de qualquer página. O componente utiliza Kartographer e não permite cache do resultado, para que revogações e mudanças de localização sejam refletidas na próxima visualização. Sem aprovações, exibe uma mensagem em vez de um mapa vazio.
-
-A substituição da home requer apenas trocar `{{Predefinição:Mapa_Brasil}}` pelo componente `<articlegeolocationmap />` no mesmo contêiner `#mapa-interativo`. Antes dessa alteração, valide a renderização em uma página temporária, salve a revisão anterior e compare pontos, links e comportamento responsivo. Após validar a nova home e o procedimento de reversão, a página temporária pode ser excluída. Não remova a predefinição legada durante a transição.
+A fila `Especial:ArticleGeolocationReview` permite revisar localizações pendentes, com 50 histórias por página e sem limite fixo para o total de candidatos.
 
 ## Migração dos marcadores históricos
 
