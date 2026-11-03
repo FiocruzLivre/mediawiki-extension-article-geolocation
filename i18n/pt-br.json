@@ -11,5 +11,8 @@
   "articlegeolocation-notification-tooltip": "Solicitações de localização para aprovação",
   "articlegeolocation-notification-header": "A localização da história $1 precisa de revisão.",
   "articlegeolocation-notification-subject": "MapaMovSaúde: localização aguardando aprovação",
-  "articlegeolocation-notification-link": "Abrir fila de moderação"
+  "articlegeolocation-notification-link": "Abrir fila de moderação",
+  "articlegeolocation-content-notification-header": "O conteúdo $1 aguarda moderação antes da publicação.",
+  "articlegeolocation-content-notification-subject": "MapaMovSaúde: conteúdo aguardando moderação",
+  "articlegeolocation-content-notification-link": "Revisar história pendente"
 }

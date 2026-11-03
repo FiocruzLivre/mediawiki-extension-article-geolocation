@@ -10,7 +10,9 @@
   "requires": {
     "MediaWiki": ">= 1.46.0"
   },
-  "AvailableRights": ["articlegeolocation-review"],
+  "AvailableRights": [
+    "articlegeolocation-review"
+  ],
   "GroupPermissions": {
     "sysop": {
       "articlegeolocation-review": true
@@ -24,7 +26,8 @@
     "SkinTemplateNavigation::Universal": "locationNavigation",
     "BeforePageDisplay": "locationNavigation",
     "PageSaveComplete": "notification",
-    "BeforeCreateEchoEvent": "notification"
+    "BeforeCreateEchoEvent": "notification",
+    "ModerationPending": "notification"
   },
   "HookHandlers": {
     "notification": {
@@ -52,24 +55,47 @@
       ]
     },
     "ext.articleGeolocation.clusters": {
-      "scripts": ["resources/home-clusters.js"],
-      "styles": ["resources/home-clusters.css"],
+      "scripts": [
+        "resources/home-clusters.js"
+      ],
+      "styles": [
+        "resources/home-clusters.css"
+      ],
       "dependencies": [
         "ext.kartographer.frame",
         "ext.kartographer.lib.leaflet.markercluster"
       ],
-      "targets": ["desktop", "mobile"]
+      "targets": [
+        "desktop",
+        "mobile"
+      ]
     },
     "ext.articleGeolocation.visualEditorMap": {
-      "scripts": ["resources/visualeditor-map.js"],
-      "styles": ["resources/visualeditor-map.css"],
-      "targets": ["desktop", "mobile"]
+      "scripts": [
+        "resources/visualeditor-map.js"
+      ],
+      "styles": [
+        "resources/visualeditor-map.css"
+      ],
+      "targets": [
+        "desktop",
+        "mobile"
+      ]
     },
     "ext.articleGeolocation.locationEditor": {
-      "scripts": ["resources/location-editor.js"],
-      "styles": ["resources/location-editor.css"],
-      "dependencies": ["ext.pageforms.leaflet"],
-      "targets": ["desktop", "mobile"]
+      "scripts": [
+        "resources/location-editor.js"
+      ],
+      "styles": [
+        "resources/location-editor.css"
+      ],
+      "dependencies": [
+        "ext.pageforms.leaflet"
+      ],
+      "targets": [
+        "desktop",
+        "mobile"
+      ]
     },
     "ext.articleGeolocation.review": {
       "scripts": [

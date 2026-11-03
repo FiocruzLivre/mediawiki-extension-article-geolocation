@@ -24,9 +24,8 @@ final readonly class ApprovedFeed {
                     throw new LogicException('Artigo repetido na origem');
                 }
                 $seen[$article->id] = true;
-                $fingerprint = $article->fingerprint();
-                if ($article->eligible() && $fingerprint !== null &&
-                    hash_equals($batch[$article->id], $fingerprint)) {
+                if ($article->eligible() &&
+                    $article->matchesApproval($batch[$article->id])) {
                     $selected[$article->id] = $article;
                 }
             }

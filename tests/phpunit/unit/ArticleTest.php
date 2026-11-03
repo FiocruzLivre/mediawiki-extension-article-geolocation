@@ -22,11 +22,14 @@ class ArticleTest extends MediaWikiUnitTestCase {
         return new Article( ...$args );
     }
 
-    public function testEligibleArticleHasStableFingerprintAfterTextEdit(): void {
+    public function testEveryRevisionRequiresFreshApproval(): void {
         $first = $this->article();
         $this->assertTrue( $first->eligible() );
-        $this->assertSame( $first->fingerprint(),
+        $this->assertNotSame( $first->fingerprint(),
             $this->article( [ 'revisionId' => 88 ] )->fingerprint() );
+        $this->assertTrue( $first->matchesApproval( $first->fingerprint() ) );
+        $this->assertFalse( $this->article( [ 'revisionId' => 88 ] )
+            ->matchesApproval( $first->fingerprint() ) );
         $this->assertNotSame( $first->fingerprint(), $this->article( [
             'primary' => Point::fromNumbers( -3.68, -40.35 )
         ] )->fingerprint() );

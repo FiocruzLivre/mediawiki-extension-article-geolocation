@@ -14,10 +14,12 @@ final class ApprovalEditor {
      * @param array<int,Point> $points Approved points keyed by article ID.
      * Validate the entire registry once and produce one atomic MediaWiki revision.
      */
-    public function approveMany(string $existing, array $points): string {
+    public function approveMany(string $existing, array $points, array $revisions): string {
         (new ApprovalRegistry())->parse($existing);
         foreach ($points as $pageId => $point) {
-            if ($pageId <= 0 || !$point instanceof Point) {
+            if ($pageId <= 0 || !$point instanceof Point ||
+                !isset($revisions[$pageId]) || !is_int($revisions[$pageId]) ||
+                $revisions[$pageId] <= 0) {
                 throw new InvalidArgumentException('Seleção de pontos inválida');
             }
         }
@@ -35,15 +37,15 @@ final class ApprovalEditor {
         ksort($points, SORT_NUMERIC);
         foreach ($points as $pageId => $point) {
             [$lat, $lon] = $point->canonical();
-            $lines[] = "$pageId|$lat|$lon";
+            $lines[] = "$pageId|$lat|$lon|" . $revisions[$pageId];
         }
         $updated = $lines === [] ? '' : implode("\n", $lines) . "\n";
         (new ApprovalRegistry())->parse($updated);
         return $updated;
     }
 
-    public function change(string $existing, int $pageId, ?Point $point): string {
-        if ($pageId <= 0) {
+    public function change(string $existing, int $pageId, ?Point $point, ?int $revisionId = null): string {
+        if ($pageId <= 0 || ($point !== null && ($revisionId === null || $revisionId <= 0))) {
             throw new InvalidArgumentException('ID de artigo inválido');
         }
         (new ApprovalRegistry())->parse($existing);
@@ -60,7 +62,7 @@ final class ApprovalEditor {
         }
         if ($point !== null) {
             [$latitude, $longitude] = $point->canonical();
-            $lines[] = "$pageId|$latitude|$longitude";
+            $lines[] = "$pageId|$latitude|$longitude|$revisionId";
         }
         $updated = $lines === [] ? '' : implode("\n", $lines) . "\n";
         (new ApprovalRegistry())->parse($updated);
