@@ -22,6 +22,7 @@
   "Hooks": {
     "ParserFirstCallInit": "mapEmbed",
     "SkinTemplateNavigation::Universal": "locationNavigation",
+    "BeforePageDisplay": "locationNavigation",
     "PageSaveComplete": "notification",
     "BeforeCreateEchoEvent": "notification"
   },
@@ -49,6 +50,11 @@
       "styles": [
         "resources/map.css"
       ]
+    },
+    "ext.articleGeolocation.visualEditorMap": {
+      "scripts": ["resources/visualeditor-map.js"],
+      "styles": ["resources/visualeditor-map.css"],
+      "targets": ["desktop", "mobile"]
     },
     "ext.articleGeolocation.locationEditor": {
       "scripts": ["resources/location-editor.js"],

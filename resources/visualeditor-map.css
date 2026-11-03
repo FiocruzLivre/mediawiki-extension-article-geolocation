@@ -1,0 +1,78 @@
+/* Default presentation shows the map, not VE's raw parameter controls.
+ * Editors may explicitly reveal the original fields using Advanced settings. */
+.articlegeo-ve-dialog:not(.articlegeo-ve-advanced) .ve-ui-mwParameterPage,
+.articlegeo-ve-dialog:not(.articlegeo-ve-advanced) .ve-ui-mwTransclusionOutlineWidget {
+    display: none !important;
+}
+.articlegeo-ve-dialog:not(.articlegeo-ve-advanced) .ve-ui-mwTwoPaneTransclusionDialogLayout-sidebar-container::before {
+    content: 'Escolha o ponto no mapa à direita. Os campos técnicos ficam em Parâmetros avançados.';
+    display: block;
+    padding: 1rem;
+    line-height: 1.5;
+    color: var(--color-subtle, #54595d);
+}
+.articlegeo-ve-advanced-toggle {
+    display: block;
+    margin-top: .75rem;
+    padding: .4rem .7rem;
+    background: transparent;
+    border: 1px solid #a2a9b1;
+    border-radius: .25rem;
+    cursor: pointer;
+}
+.articlegeo-ve-location-link {
+    display: inline-block;
+    margin-bottom: .65rem;
+    padding: .45rem .7rem;
+    border: 1px solid #36c;
+    border-radius: .25rem;
+}
+.articlegeo-ve-picker {
+    max-width: 46rem;
+    margin: 1rem 0;
+    padding: 1rem;
+    border: 1px solid #a2a9b1;
+    border-radius: .3rem;
+    background: var(--background-color-base, #fff);
+    box-sizing: border-box;
+}
+.articlegeo-ve-picker h3 { margin-top: 0; }
+.articlegeo-ve-map {
+    height: 310px;
+    width: 100%;
+    border: 1px solid #a2a9b1;
+    border-radius: .25rem;
+}
+.articlegeo-ve-coordinates {
+    display: block;
+    font-variant-numeric: tabular-nums;
+    margin: .5rem 0;
+}
+.articlegeo-ve-visibility {
+    display: block;
+    margin-top: .6rem;
+}
+.articlegeo-ve-pin { border: none; background: transparent; }
+.articlegeo-ve-pin::before {
+    content: '';
+    position: absolute;
+    left: 3px;
+    top: 3px;
+    width: 24px;
+    height: 24px;
+    background: #1767b2;
+    border: 2px solid #fff;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    box-shadow: 0 2px 5px #3338;
+}
+.articlegeo-ve-pin::after {
+    content: '';
+    position: absolute;
+    left: 13px;
+    top: 13px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fff;
+}

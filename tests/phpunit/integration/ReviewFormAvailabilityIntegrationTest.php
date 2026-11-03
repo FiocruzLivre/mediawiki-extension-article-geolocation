@@ -28,6 +28,12 @@ class ReviewFormAvailabilityIntegrationTest extends MediaWikiIntegrationTestCase
         $this->assertFalse(SpecialLocationEdit::canEditStoryLocation($anonymous, $title));
     }
 
+    public function testVisualEditorMapModuleIsRegistered(): void {
+        $module = $this->getServiceContainer()->getResourceLoader()
+            ->getModule('ext.articleGeolocation.visualEditorMap');
+        $this->assertNotNull($module);
+    }
+
     public function testModeratorCanEditWhenNormalEditingIsSuspended(): void {
         $title = $this->getNonexistingTestPage()->getTitle();
         $moderator = $this->getTestSysop()->getUser();
