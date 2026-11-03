@@ -18,6 +18,7 @@ final class MapEmbedHooks {
 
     public function render(?string $input, array $attributes, Parser $parser): string {
         $parser->getOutput()->updateCacheExpiry(0);
+        $parser->getOutput()->addModuleStyles(['ext.articleGeolocation.map']);
         if (!ExtensionRegistry::getInstance()->isLoaded('Kartographer')) {
             return 'O mapa requer a extensão Kartographer.';
         }

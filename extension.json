@@ -41,6 +41,11 @@
     "remoteExtPath": "ArticleGeolocation"
   },
   "ResourceModules": {
+    "ext.articleGeolocation.map": {
+      "styles": [
+        "resources/map.css"
+      ]
+    },
     "ext.articleGeolocation.review": {
       "scripts": [
         "resources/review.js"
