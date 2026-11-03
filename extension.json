@@ -21,6 +21,7 @@
   },
   "Hooks": {
     "ParserFirstCallInit": "mapEmbed",
+    "SkinTemplateNavigation::Universal": "locationNavigation",
     "PageSaveComplete": "notification",
     "BeforeCreateEchoEvent": "notification"
   },
@@ -30,6 +31,9 @@
     },
     "mapEmbed": {
       "class": "MediaWiki\\Extension\\ArticleGeolocation\\MapEmbedHooks"
+    },
+    "locationNavigation": {
+      "class": "MediaWiki\\Extension\\ArticleGeolocation\\LocationNavigationHooks"
     }
   },
   "DefaultUserOptions": {
@@ -46,6 +50,12 @@
         "resources/map.css"
       ]
     },
+    "ext.articleGeolocation.locationEditor": {
+      "scripts": ["resources/location-editor.js"],
+      "styles": ["resources/location-editor.css"],
+      "dependencies": ["ext.pageforms.leaflet"],
+      "targets": ["desktop", "mobile"]
+    },
     "ext.articleGeolocation.review": {
       "scripts": [
         "resources/review.js"
@@ -59,7 +69,8 @@
   "SpecialPages": {
     "ArticleGeolocationFeed": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialGeoJson",
     "ArticleGeolocationReview": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialReview",
-    "ArticleGeolocationPreview": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialMapPreview"
+    "ArticleGeolocationPreview": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialMapPreview",
+    "ArticleGeolocationEdit": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialLocationEdit"
   },
   "MessagesDirs": {
     "ArticleGeolocation": [

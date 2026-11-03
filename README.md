@@ -31,6 +31,10 @@ Quando a extensão Echo estiver instalada e ativada, a criação ou alteração 
 
 **Antes de produção:** validar visualmente o fluxo administrativo e registrar a captura no PR sem versioná-la. A permissão específica `articlegeolocation-review` evita distribuir desnecessariamente o direito amplo `editinterface`. O feed aprovado é disponibilizado em `Special:ArticleGeolocationFeed`. **O GeoData possui API própria: não registre localização confidencial esperando protegê-la apenas pela aprovação deste feed.**
 
+### Edição visual da localização
+
+Quem possui a permissão `articlegeolocation-review` pode abrir **Editar localização** na aba da história ou na revisão individual. `Especial:ArticleGeolocationEdit/<ID>` oferece mapa Leaflet clicável, marcador arrastável e pesquisa explícita por local (OpenStreetMap/Nominatim), sem modificar o VisualEditor usado para escrever histórias. A edição altera exclusivamente as coordenadas da predefinição existente, preservando o texto e demais parâmetros; revisão concorrente impede a gravação. Uma localização modificada perde a aprovação editorial anterior até ser novamente conferida. A tela exige Page Forms para disponibilizar os recursos Leaflet, mas **não requer VEForAll nem ativa o formulário público de criação de histórias**. Essa operação é reservada aos moderadores autorizados mesmo quando a edição geral de artigos está suspensa; usuários comuns não recebem a ação.
+
 ### Prévia e mapa público
 
 Use `Especial:ArticleGeolocationPreview` para conferir **todos** os pontos solicitados, incluindo os ainda pendentes. Essa página exige a permissão `articlegeolocation-review` e nunca publica os pontos pendentes no feed aberto. A fila em `Especial:ArticleGeolocationReview` é paginada (50 histórias por página), sem limite fixo de 500 candidatos.
