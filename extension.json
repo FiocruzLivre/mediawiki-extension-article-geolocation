@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "ArticleGeolocation",
-  "version": "0.0.0-dev",
+  "version": "0.1.0-dev",
   "author": [
     "FiocruzLivre"
   ],
@@ -9,5 +9,56 @@
   "type": "other",
   "requires": {
     "MediaWiki": ">= 1.46.0"
+  },
+  "AvailableRights": ["articlegeolocation-review"],
+  "GroupPermissions": {
+    "sysop": {
+      "articlegeolocation-review": true
+    }
+  },
+  "AutoloadNamespaces": {
+    "MediaWiki\\Extension\\ArticleGeolocation\\": "src/"
+  },
+  "Hooks": {
+    "ParserFirstCallInit": "mapEmbed",
+    "PageSaveComplete": "notification",
+    "BeforeCreateEchoEvent": "notification"
+  },
+  "HookHandlers": {
+    "notification": {
+      "class": "MediaWiki\\Extension\\ArticleGeolocation\\NotificationHooks"
+    },
+    "mapEmbed": {
+      "class": "MediaWiki\\Extension\\ArticleGeolocation\\MapEmbedHooks"
+    }
+  },
+  "DefaultUserOptions": {
+    "echo-subscriptions-web-article-geolocation": true,
+    "echo-subscriptions-email-article-geolocation": false
+  },
+  "ResourceFileModulePaths": {
+    "localBasePath": "",
+    "remoteExtPath": "ArticleGeolocation"
+  },
+  "ResourceModules": {
+    "ext.articleGeolocation.review": {
+      "scripts": [
+        "resources/review.js"
+      ],
+      "targets": [
+        "desktop",
+        "mobile"
+      ]
+    }
+  },
+  "SpecialPages": {
+    "ArticleGeolocationFeed": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialGeoJson",
+    "ArticleGeolocationReview": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialReview",
+    "ArticleGeolocationPreview": "MediaWiki\\Extension\\ArticleGeolocation\\SpecialMapPreview"
+  },
+  "MessagesDirs": {
+    "ArticleGeolocation": [
+      "i18n"
+    ]
   }
 }
