@@ -70,9 +70,6 @@ final class SpecialMapPreview extends SpecialPage {
             'type' => 'FeatureCollection',
             'features' => $features,
         ], JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-        $out->addWikiTextAsInterface(
-            '<mapframe zoom="4" longitude="-54" latitude="-16" width="1100" height="700"'
-            . ' align="center">' . $json . '</mapframe>'
-        );
+        $out->addWikiTextAsInterface(MapFrameMarkup::fromGeoJson($json));
     }
 }

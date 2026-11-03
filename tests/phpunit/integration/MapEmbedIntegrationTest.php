@@ -30,6 +30,9 @@ class MapEmbedIntegrationTest extends MediaWikiIntegrationTestCase {
 
         $first = $this->parseMap();
         $this->assertStringContainsString('mw-kartographer-map', $first->getContentHolderText());
+        $this->assertStringContainsString('data-zoom="5"', $first->getContentHolderText());
+        $this->assertStringContainsString('data-width="1140"', $first->getContentHolderText());
+        $this->assertStringContainsString('data-height="1000"', $first->getContentHolderText());
         $this->assertSame(0, $first->getCacheExpiry());
         $this->assertContains('ext.articleGeolocation.map', $first->getModuleStyles());
 
