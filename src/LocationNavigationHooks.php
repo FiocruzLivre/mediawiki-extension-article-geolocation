@@ -16,6 +16,9 @@ final class LocationNavigationHooks implements SkinTemplateNavigation__Universal
      */
     public function onBeforePageDisplay(OutputPage $out, Skin $skin): void {
         $title = $out->getTitle();
+        if ($title !== null && $title->isMainPage()) {
+            $out->addModules('ext.articleGeolocation.clusters');
+        }
         if ($title === null || $title->getNamespace() !== NS_MAIN ||
             !$title->exists() || !SpecialLocationEdit::canEditStoryLocation(
                 $out->getUser(), $title
