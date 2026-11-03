@@ -366,6 +366,19 @@ final class SpecialReview extends SpecialPage {
         }
     }
 
+    /**
+     * Never send moderators to a Page Forms URL that is not actually usable.
+     * Publishing the geolocation template is not the same as activating its editor.
+     */
+    private function hasAvailableGeolocationForm(): bool {
+        if (empty($GLOBALS['wgMapamovGeolocationEnabled']) ||
+            !\MediaWiki\Registration\ExtensionRegistry::getInstance()->isLoaded('VEForAll')) {
+            return false;
+        }
+        $form = Title::newFromText('Form:Artigo com geolocalização');
+        return $form !== null && $form->exists();
+    }
+
     /** @param array<int,string> $approved */
     private function renderDetail(Article $article, array $approved, $registryPage): void {
         $out = $this->getOutput();
@@ -380,15 +393,23 @@ final class SpecialReview extends SpecialPage {
         if ($title === null) {
             return;
         }
-        $form = self::getTitleFor('FormEdit',
-            'Artigo_com_geolocalização/' . $title->getPrefixedDBkey());
-
         $out->addHTML(Html::element('h2', [], $article->title));
-        $out->addHTML(Html::rawElement('p', [],
-            Html::element('a', ['href' => $title->getLocalURL()], 'Ler a história')
-            . ' · '
-            . Html::element('a', ['href' => $form->getLocalURL()],
-                'Editar ou reposicionar no mapa')));
+        $storyLink = Html::element('a', ['href' => $title->getLocalURL()], 'Ler a história');
+        $formAvailable = $this->hasAvailableGeolocationForm();
+        if ($formAvailable) {
+            $form = self::getTitleFor('FormEdit',
+                'Artigo_com_geolocalização/' . $title->getPrefixedDBkey());
+            $storyLink .= ' · ' . Html::element('a', ['href' => $form->getLocalURL()],
+                'Editar ou reposicionar no mapa');
+        }
+        $out->addHTML(Html::rawElement('p', [], $storyLink));
+        if (!$formAvailable) {
+            $out->addHTML(Html::element('p', [],
+                'O formulário visual de reposicionamento ainda não está ativo nesta wiki. '
+                . 'A localização importada pode ser conferida no mapa abaixo, '
+                . 'mas não pode ser modificada por esta tela enquanto o formulário '
+                . 'não estiver disponível. Os dados permanecem preservados.'));
+        }
         $out->addHTML(Html::element('p', [],
             $isApproved ? 'Localização aprovada' : 'Localização pendente de aprovação'));
 
