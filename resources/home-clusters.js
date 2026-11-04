@@ -52,9 +52,10 @@
         container.appendChild( details );
     }
 
-    function clusterMap( map ) {
+    function clusterMap( map, isFullScreen ) {
         const mapElement = map.getContainer();
-        const container = mapElement.closest( '#mapa-interativo' );
+        const container = mapElement.closest( isFullScreen ?
+            '.mw-kartographer-mapDialog-body' : '#mapa-interativo' );
         if ( !container || handled.has( map ) || typeof L.markerClusterGroup !== 'function' ) {
             return;
         }
@@ -87,18 +88,20 @@
             }
             cluster.addLayers( markers );
             map.addLayer( cluster );
-            const help = document.createElement( 'p' );
-            help.className = 'articlegeo-map-help';
-            help.textContent = 'Clique nos círculos numerados para aproximar o mapa. ' +
-                'Se houver histórias no mesmo ponto, clique novamente para separá-las.';
-            container.insertBefore( help, container.firstChild );
-            addAccessibleList( container, markers );
+            if ( !isFullScreen ) {
+                const help = document.createElement( 'p' );
+                help.className = 'articlegeo-map-help';
+                help.textContent = 'Clique nos círculos numerados para aproximar o mapa. ' +
+                    'Se houver histórias no mesmo ponto, clique novamente para separá-las.';
+                container.insertBefore( help, container.firstChild );
+                addAccessibleList( container, markers );
+            }
         } );
     }
 
     mw.hook( 'wikipage.maps' ).add( ( maps, isFullScreen ) => {
-        if ( !isFullScreen ) {
-            maps.forEach( clusterMap );
-        }
+        // Kartographer emits a list for embedded maps, but a single map for dialogs.
+        const mapList = Array.isArray( maps ) ? maps : [ maps ];
+        mapList.forEach( ( map ) => clusterMap( map, isFullScreen ) );
     } );
 }() );
