@@ -1,5 +1,6 @@
 /* Kartographer markers must retain their full pin silhouette. The legacy
- * map used this override; keep it scoped to the extension's map surfaces. */
-.mw-kartographer-map img.leaflet-marker-icon {
+ * map used this override; keep it scoped to embedded and fullscreen maps. */
+.mw-kartographer-map img.leaflet-marker-icon,
+.mw-kartographer-mapDialog-map img.leaflet-marker-icon {
     clip-path: none !important;
 }

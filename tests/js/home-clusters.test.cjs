@@ -21,7 +21,7 @@ class Element {
     }
 }
 
-function runWithMarkers( count, isHome = true ) {
+function runWithMarkers( count, { surface = 'home', isFullScreen = false } = {} ) {
     let handler;
     let cluster;
     const container = new Element();
@@ -32,7 +32,9 @@ function runWithMarkers( count, isHome = true ) {
         removed: []
     };
     const mapElement = {
-        closest: ( selector ) => selector === '#mapa-interativo' && isHome ? container : null
+        closest: ( selector ) => ( selector === '#mapa-interativo' && surface === 'home' ) ||
+            ( selector === '.mw-kartographer-mapDialog-body' && surface === 'dialog' ) ?
+            container : null
     };
     const map = {
         getContainer: () => mapElement,
@@ -55,8 +57,9 @@ function runWithMarkers( count, isHome = true ) {
         mw: { hook: () => ( { add: ( callback ) => { handler = callback; } } ) }
     };
     vm.runInNewContext( fs.readFileSync( 'resources/home-clusters.js', 'utf8' ), context );
-    handler( [ map ], false );
-    handler( [ map ], false );
+    const argument = isFullScreen ? map : [ map ];
+    handler( argument, isFullScreen );
+    handler( argument, isFullScreen );
     return { markers, source, cluster, container };
 }
 
@@ -89,6 +92,26 @@ test( 'clusters the original markers without losing popups or duplicating the li
 } );
 
 test( 'does not touch unrelated maps or single markers', () => {
-    assert.equal( runWithMarkers( 3, false ).cluster, undefined );
+    assert.equal( runWithMarkers( 3, { surface: 'unrelated' } ).cluster, undefined );
+    assert.equal( runWithMarkers( 3, { surface: 'dialog' } ).cluster, undefined );
+    assert.equal( runWithMarkers( 3, { surface: 'home', isFullScreen: true } ).cluster, undefined );
+    assert.equal( runWithMarkers( 3, { surface: 'unrelated', isFullScreen: true } ).cluster, undefined );
     assert.equal( runWithMarkers( 1 ).cluster, undefined );
+    assert.equal( runWithMarkers( 1, { surface: 'dialog', isFullScreen: true } ).cluster, undefined );
+} );
+
+
+test( 'fullscreen map clusters the same markers and preserves popup links', () => {
+    const { markers, source, cluster, container } = runWithMarkers( 78, {
+        surface: 'dialog', isFullScreen: true
+    } );
+    assert.equal( source.removed.length, 78 );
+    assert.equal( cluster.markers.length, markers.length );
+    cluster.markers.forEach( ( marker, i ) => {
+        assert.equal( marker, markers[ i ] );
+        assert.equal( marker.popup, markers[ i ].popup );
+    } );
+    assert.equal( cluster.options.spiderfyOnMaxZoom, true );
+    // Do not insert the homepage's help and list into the fullscreen map dialog.
+    assert.equal( container.children.length, 0 );
 } );
